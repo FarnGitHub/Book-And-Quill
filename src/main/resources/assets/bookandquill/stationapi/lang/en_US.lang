@@ -1,0 +1,8 @@
+item.bookandquill.writable_book.name=Book and Quill
+item.bookandquill.written_book.name=Written Book
+bookscreen.bookandquill.book.pageIndicator=Page %1$s of %2$s
+bookscreen.bookandquill.book.byAuthor=by %1$s
+bookscreen.bookandquill.book.signButton=Sign
+bookscreen.bookandquill.book.editTitle=Enter Book Title:
+bookscreen.bookandquill.book.finalizeButton=Sign and Close
+bookscreen.bookandquill.book.finalizeWarning=Note! When you sign the book, it will no longer be editable.
