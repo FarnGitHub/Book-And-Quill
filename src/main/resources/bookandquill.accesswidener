@@ -1,0 +1,6 @@
+classTweaker v1 named
+
+accessible field net/minecraft/nbt/NbtList value Ljava/util/List;
+accessible method net/minecraft/nbt/NbtCompound write (Ljava/io/DataOutput;)V
+accessible method net/minecraft/nbt/NbtCompound read (Ljava/io/DataInput;)V
+accessible field net/minecraft/client/Minecraft INSTANCE Lnet/minecraft/client/Minecraft;

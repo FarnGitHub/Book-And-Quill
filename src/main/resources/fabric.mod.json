@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "bookandquill",
+  "version": "${version}",
+
+  "name": "Book And Quill",
+  "description": "Add Book And Quill to b1.7.3. identical to how it work in 1.3.1",
+  "authors": [
+    "farnfarn02"
+  ],
+  "license": "MIT",
+  "icon": "assets/bookandquill/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "stationapi:event_bus": [
+      "farn.bookandquil.BookAndQuil"
+    ]
+  },
+  "depends": {
+    "minecraft": "1.0.0-beta.7.3"
+  }
+}
