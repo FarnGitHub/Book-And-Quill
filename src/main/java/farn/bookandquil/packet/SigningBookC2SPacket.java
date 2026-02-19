@@ -1,6 +1,7 @@
 package farn.bookandquil.packet;
 
 import farn.bookandquil.BookAndQuil;
+import farn.bookandquil.item.WritableBookItem;
 import farn.bookandquil.item.WrittenBookItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -83,7 +84,7 @@ public class SigningBookC2SPacket extends Packet
         PlayerEntity player = PlayerHelper.getPlayerFromPacketHandler(handler);
         ItemStack stack = player.inventory.getStack(slot);
         ItemStack newItem = new ItemStack(nbt);
-        if (stack != null && stack.getItem() instanceof WrittenBookItem) {
+        if (stack != null && stack.getItem() instanceof WritableBookItem) {
             if(BookAndQuil.validContent(newItem.getStationNbt())) {
                 stack.getStationNbt().putString("author", player.name);
                 stack.getStationNbt().putString("title", newItem.getStationNbt().getString("title"));

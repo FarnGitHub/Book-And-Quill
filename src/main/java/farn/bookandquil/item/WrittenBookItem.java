@@ -27,11 +27,11 @@ public class WrittenBookItem extends AbstractBookItem implements CustomTooltipPr
             if(stack.getStationNbt() != null) {
                 NbtCompound nbt = stack.getStationNbt();
                 String title = nbt.getString("title");
-                if(title != null) {
+                if(title != null && !title.isEmpty()) {
                     list.set(0, title);
                 }
                 String author = nbt.getString("author");
-                if(author != null) {
+                if(author != null && !author.isEmpty()) {
                     list.add("§8" + BookAndQuil.translateFormat("book.byAuthor", author));
                 }
             }
