@@ -4,13 +4,12 @@ import farn.bookandquil.BookAndQuil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.modificationstation.stationapi.api.client.item.CustomTooltipProvider;
-import net.modificationstation.stationapi.api.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WrittenBookItem extends AbstractBookItem implements CustomTooltipProvider {
-    public WrittenBookItem(Identifier id) {
+    public WrittenBookItem(String id) {
         super(id);
     }
 

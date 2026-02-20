@@ -11,6 +11,7 @@
   "license": "MIT",
   "icon": "assets/bookandquill/icon.png",
   "environment": "*",
+  "accessWidener": "bookandquill.classTweaker",
   "entrypoints": {
     "stationapi:event_bus": [
       "farn.bookandquil.BookAndQuil"

@@ -66,9 +66,8 @@ public class BookScreen extends Screen {
             this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 + 2, 4 + this.backgroundHeight, 98, 20, TranslationStorage.getInstance().get("gui.done")));
             this.buttons.add(this.finalizeButton = new ButtonWidget(5, this.width / 2 - 100, 4 + this.backgroundHeight, 98, 20, BookAndQuil.translate("book.finalizeButton")));
             this.buttons.add(this.cancelButton = new ButtonWidget(4, this.width / 2 + 2, 4 + this.backgroundHeight, 98, 20, TranslationStorage.getInstance().get("gui.cancel")));
-        } else {
+        } else
             this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 - 100, 4 + this.backgroundHeight, 200, 20, TranslationStorage.getInstance().get("gui.done")));
-        }
 
         int var1 = (this.width - this.backgroundWidth) / 2;
         byte var2 = 2;
@@ -95,7 +94,7 @@ public class BookScreen extends Screen {
 
     }
 
-    private void sendDataToServer(boolean signingBook) {
+    private void updateBookData(boolean signingBook) {
         if(this.writable && this.modified) {
             if(this.pages != null) {
                 while(this.pages.size() > 1) {
@@ -108,8 +107,8 @@ public class BookScreen extends Screen {
 
                 this.book.getStationNbt().put("pages", this.pages);
                 if(signingBook) {
-                    this.book.getStationNbt().put("author", new NbtString(this.player.name));
-                    this.book.getStationNbt().put("title", new NbtString(this.title.trim()));
+                    this.book.getStationNbt().putString("author", this.player.name);
+                    this.book.getStationNbt().putString("title", this.title.trim());
                     this.book.itemId = BookAndQuil.WRITTEN_BOOK.id;
                     PacketHelper.send(new SigningBookC2SPacket(player.inventory.selectedSlot, book));
                 } else
@@ -124,7 +123,7 @@ public class BookScreen extends Screen {
         if(var1.active) {
             if(var1.id == 0) {
                 this.minecraft.setScreen(null);
-                this.sendDataToServer(false);
+                this.updateBookData(false);
             } else if(var1.id == 3 && this.writable) {
                 this.signing = true;
             } else if(var1.id == 1) {
@@ -141,7 +140,7 @@ public class BookScreen extends Screen {
                     --this.currentPage;
                 }
             } else if(var1.id == 5 && this.signing) {
-                this.sendDataToServer(true);
+                this.updateBookData(true);
                 this.minecraft.setScreen(null);
             } else if(var1.id == 4 && this.signing) {
                 this.signing = false;
@@ -204,7 +203,7 @@ public class BookScreen extends Screen {
                 return;
             case 28:
                 if(!this.title.isEmpty()) {
-                    this.sendDataToServer(true);
+                    this.updateBookData(true);
                     this.minecraft.setScreen(null);
                 }
 
@@ -253,11 +252,16 @@ public class BookScreen extends Screen {
             if(title.isEmpty()) {
                 title = "No Title";
             }
+            String author = this.book.getStationNbt().getString("author");
+            if(author.isEmpty()) {
+                author = "Unknown Author";
+            }
+
             int titleWidth = this.textRenderer.getWidth(title);
             this.textRenderer.draw(title, bookX + 36 + (116 - titleWidth) / 2, 50, 0);
-            String author = String.format(BookAndQuil.translate("book.byAuthor"), this.player.name);
-            int authorWidth = this.textRenderer.getWidth(author);
-            this.textRenderer.draw("§8" + author, bookX + 36 + (116 - authorWidth) / 2, 60, 0);
+            String authorFormat = String.format(BookAndQuil.translate("book.byAuthor"), author);
+            int authorWidth = this.textRenderer.getWidth(authorFormat);
+            this.textRenderer.draw("§8" + authorFormat, bookX + 36 + (116 - authorWidth) / 2, 60, 0);
         } else if(this.signing) {
             String title = this.title;
 

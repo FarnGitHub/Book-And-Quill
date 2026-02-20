@@ -1,9 +1,7 @@
 package farn.bookandquil.item;
 
-import net.modificationstation.stationapi.api.util.Identifier;
-
 public class WritableBookItem extends AbstractBookItem {
-    public WritableBookItem(Identifier id) {
+    public WritableBookItem(String id) {
         super(id);
     }
 

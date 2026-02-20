@@ -1,13 +1,11 @@
 package farn.bookandquil.packet;
 
 import farn.bookandquil.BookAndQuil;
-import farn.bookandquil.item.WritableBookItem;
-import farn.bookandquil.item.WrittenBookItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.NetworkHandler;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.nbt.NbtCompound;
 import net.modificationstation.stationapi.api.entity.player.PlayerHelper;
 import net.modificationstation.stationapi.api.network.packet.ManagedPacket;
 import net.modificationstation.stationapi.api.network.packet.PacketType;
@@ -27,7 +25,8 @@ public class SigningBookC2SPacket extends Packet
             PacketType.builder(false, true, SigningBookC2SPacket::new).build();
 
     public int slot;
-    public NbtCompound nbt;
+    public String title;
+    public NbtList list;
     private int length;
 
     public SigningBookC2SPacket() {
@@ -35,15 +34,17 @@ public class SigningBookC2SPacket extends Packet
 
     public SigningBookC2SPacket(int slot, ItemStack stack) {
         this.slot = slot;
-        this.nbt = stack.writeNbt(new NbtCompound());
+        this.title = stack.getStationNbt().getString("title");
+        this.list = stack.getStationNbt().getList("pages");
     }
 
     @Override
     public void read(DataInputStream in) {
         try {
             slot = in.readInt();
-            nbt = new NbtCompound();
-            nbt.read(in);
+            title = in.readUTF();
+            list = new NbtList();
+            list.read(in);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -53,8 +54,9 @@ public class SigningBookC2SPacket extends Packet
     public void write(DataOutputStream out) {
         try {
             out.writeInt(slot);
+            out.writeUTF(title);
             DataOutputStream outputStream = new DataOutputStream(out);
-            nbt.write(outputStream);
+            list.write(outputStream);
             try {
                 outputStream.flush();
             } catch (IOException e) {
@@ -83,14 +85,12 @@ public class SigningBookC2SPacket extends Packet
     public void handleServer(NetworkHandler handler) {
         PlayerEntity player = PlayerHelper.getPlayerFromPacketHandler(handler);
         ItemStack stack = player.inventory.getStack(slot);
-        ItemStack newItem = new ItemStack(nbt);
-        if (stack != null && stack.getItem() instanceof WritableBookItem) {
-            if(BookAndQuil.validContent(newItem.getStationNbt())) {
-                stack.getStationNbt().putString("author", player.name);
-                stack.getStationNbt().putString("title", newItem.getStationNbt().getString("title"));
-                stack.getStationNbt().put("pages", newItem.getStationNbt().getList("pages"));
-                stack.itemId = newItem.itemId;
-            }
+        if (stack != null && stack.itemId == BookAndQuil.BOOK_AND_QUILL.id
+                && BookAndQuil.validContent(list)) {
+            stack.getStationNbt().putString("author", player.name);
+            stack.getStationNbt().putString("title", title);
+            stack.getStationNbt().put("pages", list);
+            stack.itemId = BookAndQuil.WRITTEN_BOOK.id;
         }
     }
 

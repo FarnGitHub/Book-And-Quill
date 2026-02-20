@@ -11,6 +11,7 @@ import net.minecraft.client.resource.language.TranslationStorage;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.modificationstation.stationapi.api.client.event.texture.TextureRegisterEvent;
 import net.modificationstation.stationapi.api.event.network.packet.PacketRegisterEvent;
@@ -39,8 +40,8 @@ public class BookAndQuil {
 
     @EventListener
     public void registerItems(ItemRegistryEvent event) {
-        BOOK_AND_QUILL = new WritableBookItem(NAMESPACE.id("writable_book")).setTranslationKey(NAMESPACE, "writable_book");
-        WRITTEN_BOOK = new WrittenBookItem(NAMESPACE.id("written_book")).setTranslationKey(NAMESPACE, "written_book");
+        BOOK_AND_QUILL = new WritableBookItem("writable_book").setTranslationKey(NAMESPACE, "writable_book");
+        WRITTEN_BOOK = new WrittenBookItem("written_book").setTranslationKey(NAMESPACE, "written_book");
     }
 
     @EventListener
@@ -66,25 +67,23 @@ public class BookAndQuil {
     }
 
     public static String translate(String string) {
-        return TranslationStorage.getInstance().get("bookscreen.bookandquill." + string);
+        return TranslationStorage.getInstance().get("bookandquill." + string);
     }
 
     public static String translateFormat(String string, Object... var1) {
-        return TranslationStorage.getInstance().get("bookscreen.bookandquill." + string, var1);
+        return TranslationStorage.getInstance().get("bookandquill." + string, var1);
     }
 
     @SuppressWarnings("unchecked")
-    public static boolean validContent(NbtCompound nbt) {
-        if(nbt != null && nbt.contains("pages")) {
-            List<NbtString> var1 = nbt.getList("pages").value;
+    public static boolean validContent(NbtList listNbt) {
+        if(listNbt == null) return false;
+        List<NbtString> list = listNbt.value;
 
-            for(NbtString content : var1)
-                if(content.value == null || content.value.length() > 256)
-                    return false;
+        for(NbtString content : list)
+            if(content.value == null || content.value.length() > 256)
+                return false;
 
-            return true;
-        }
-        return  false;
+        return true;
     }
 
 }
