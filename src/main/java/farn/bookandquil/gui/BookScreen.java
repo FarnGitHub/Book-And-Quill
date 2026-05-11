@@ -119,14 +119,14 @@ public class BookScreen extends Screen {
     }
 
     @Override
-    protected void buttonClicked(ButtonWidget var1) {
-        if(var1.active) {
-            if(var1.id == 0) {
+    protected void buttonClicked(ButtonWidget button) {
+        if(button.active) {
+            if(button.id == 0) {
                 this.minecraft.setScreen(null);
                 this.updateBookData(false);
-            } else if(var1.id == 3 && this.writable) {
+            } else if(button.id == 3 && this.writable) {
                 this.signing = true;
-            } else if(var1.id == 1) {
+            } else if(button.id == 1) {
                 if(this.currentPage < this.totalPages - 1) {
                     ++this.currentPage;
                 } else if(this.writable) {
@@ -135,14 +135,14 @@ public class BookScreen extends Screen {
                         ++this.currentPage;
                     }
                 }
-            } else if(var1.id == 2) {
+            } else if(button.id == 2) {
                 if(this.currentPage > -1) {
                     --this.currentPage;
                 }
-            } else if(var1.id == 5 && this.signing) {
+            } else if(button.id == 5 && this.signing) {
                 this.updateBookData(true);
                 this.minecraft.setScreen(null);
-            } else if(var1.id == 4 && this.signing) {
+            } else if(button.id == 4 && this.signing) {
                 this.signing = false;
             }
 
@@ -159,13 +159,13 @@ public class BookScreen extends Screen {
     }
 
     @Override
-    protected void keyPressed(char var1, int var2) {
-        super.keyPressed(var1, var2);
+    protected void keyPressed(char character, int keyCode) {
+        super.keyPressed(character, keyCode);
         if(this.writable) {
             if(this.signing)
-                this.typeInSigning(var1, var2);
+                this.typeInSigning(character, keyCode);
             else
-                this.typeInBook(var1, var2);
+                this.typeInBook(character, keyCode);
         }
     }
 

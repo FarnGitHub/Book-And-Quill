@@ -10,10 +10,10 @@ import net.mine_diver.unsafeevents.listener.EventListener;
 import net.minecraft.client.resource.language.TranslationStorage;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.modificationstation.stationapi.api.client.event.texture.TextureRegisterEvent;
+import net.modificationstation.stationapi.api.event.container.slot.ItemUsedInCraftingEvent;
 import net.modificationstation.stationapi.api.event.network.packet.PacketRegisterEvent;
 import net.modificationstation.stationapi.api.event.recipe.RecipeRegisterEvent;
 import net.modificationstation.stationapi.api.event.registry.ItemRegistryEvent;
@@ -66,6 +66,13 @@ public class BookAndQuil {
         }
     }
 
+    @EventListener
+    public void afterCrafting(ItemUsedInCraftingEvent event) {
+        if(isCopiedBook(event.itemCrafted) && isWrittenBook(event.itemUsed)) {
+            event.craftingMatrix.setStack(event.itemOrdinal, event.itemUsed);
+        }
+    }
+
     public static String translate(String string) {
         return TranslationStorage.getInstance().get("bookandquill." + string);
     }
@@ -84,6 +91,14 @@ public class BookAndQuil {
                 return false;
 
         return true;
+    }
+
+    public static boolean isCopiedBook(ItemStack stack) {
+        return isWrittenBook(stack) && stack.getStationNbt().getBoolean("copy");
+    }
+
+    public static boolean isWrittenBook(ItemStack stack) {
+        return stack != null && stack.getItem() instanceof WrittenBookItem;
     }
 
 }

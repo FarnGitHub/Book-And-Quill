@@ -29,9 +29,14 @@ public class WrittenBookItem extends AbstractBookItem implements CustomTooltipPr
                 if(title != null && !title.isEmpty()) {
                     list.set(0, title);
                 }
-                String author = nbt.getString("author");
-                if(author != null && !author.isEmpty()) {
-                    list.add("§8" + BookAndQuil.translateFormat("book.byAuthor", author));
+
+                if(nbt.contains("copy") && nbt.getBoolean("copy")) {
+                    list.add("§8Copy");
+                } else {
+                    String author = nbt.getString("author");
+                    if(author != null && !author.isEmpty()) {
+                        list.add("§8" + BookAndQuil.translateFormat("book.byAuthor", author));
+                    }
                 }
             }
             return list.toArray(new String[0]);
