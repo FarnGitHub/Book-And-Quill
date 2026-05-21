@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'xyz.wagyourtail.unimined' version '1.3.15'
+    id 'xyz.wagyourtail.unimined' version '1.4.2-SNAPSHOT'
 }
 
 group = project.property('group')
@@ -31,8 +31,6 @@ repositories {
 }
 
 unimined {
-    useGlobalCache = false
-
     minecraft {
         version 'b1.7.3'
         side 'client'
@@ -40,7 +38,7 @@ unimined {
         mappings {
             retroMCP("b1.7")
 
-            stub.withMappings(['searge', 'mcp']) {
+            stubs(['official', 'retroMCP']) {
                 def base = 'net/minecraft/src'
                 def mapClass = { name ->
                     def path = "$base/$name"
@@ -56,6 +54,7 @@ unimined {
         }
 
         jarMod {
+            transforms "${modid}.transform"
         }
 
         runs {
@@ -68,11 +67,18 @@ unimined {
 
 dependencies {
     jarMod 'risugami:modloader:b1.7.3'
+    jarMod 'modloadermp:modloadermp:b1.7.3:client'
+    jarMod 'net.minecraftforge:forge:b1.7.3-1.0.7:client'
 
     // Any mods in the jarmods folder are automatically added as dependencies
     jarMod fileTree(dir: 'jarmods', include: ['*.jar', '*.zip'])
 }
 
 jar {
-    from('LICENSE')
+    manifest {
+        attributes(
+                'JarModAgent-Transforms': "${modid}.transform",
+                'JarModAgent-Refmaps': "${modid}-refmap.json"
+        )
+    }
 }
