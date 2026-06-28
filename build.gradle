@@ -1,7 +1,7 @@
 plugins {
     id 'maven-publish'
-    id 'fabric-loom' version '1.14.9'
-    id 'babric-loom-extension' version '1.14.1'
+    id 'fabric-loom' version '1.16.2'
+    id 'babric-loom-extension' version '1.16.1'
 }
 
 version = property("mod_version")
@@ -117,31 +117,14 @@ dependencies {
             transitive = false
         }
     }
-
     if (project.hasProperty("bhcreative_version")) {
         modImplementation("maven.modrinth:bh-creative:${project.bhcreative_version}-b1.7.3") {
             transitive = false
         }
     }
 
-    if (project.hasProperty("accessoryapi_version")) {
-        modImplementation("maven.modrinth:accessory-api:${project.accessoryapi_version}") {
-            transitive = false
-        }
-    }
-
     if (project.hasProperty("whatsthis_version")) {
         modImplementation("net.danygames2014:WhatsThis:${project.whatsthis_version}") {
-            transitive = false
-        }
-    }
-
-    if (project.hasProperty("nyalib_version")) {
-        modImplementation("net.danygames2014:NyaLib:${project.nyalib_version}")
-    }
-
-    if (project.hasProperty("uniwrench_version")) {
-        modImplementation("net.danygames2014:UniWrench:${project.uniwrench_version}") {
             transitive = false
         }
     }

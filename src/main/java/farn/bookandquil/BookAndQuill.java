@@ -4,12 +4,14 @@ import farn.bookandquil.item.WritableBookItem;
 import farn.bookandquil.packet.BookContentC2SPacket;
 import farn.bookandquil.item.WrittenBookItem;
 import farn.bookandquil.packet.SigningBookC2SPacket;
+import farn.bookandquil.util.ClonedBookCraftingRecipe;
 import farn.bookandquil.util.MainUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.mine_diver.unsafeevents.listener.EventListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.CraftingRecipeManager;
 import net.modificationstation.stationapi.api.client.event.texture.TextureRegisterEvent;
 import net.modificationstation.stationapi.api.event.container.slot.ItemUsedInCraftingEvent;
 import net.modificationstation.stationapi.api.event.network.packet.PacketRegisterEvent;
@@ -59,6 +61,9 @@ public class BookAndQuill {
 
         if (type == RecipeRegisterEvent.Vanilla.CRAFTING_SHAPED) {
             CraftingRegistry.addShapelessRecipe(new ItemStack(BOOK_AND_QUILL, 1), Item.BOOK, new ItemStack(Item.DYE, 1, 0), Item.FEATHER);
+        } else if(type == RecipeRegisterEvent.Vanilla.CRAFTING_SHAPELESS) {
+            //noinspection unchecked
+            CraftingRecipeManager.getInstance().getRecipes().add(new ClonedBookCraftingRecipe());
         }
     }
 
