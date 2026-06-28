@@ -264,6 +264,9 @@ public class BookScreen extends Screen {
 
     private void setContent(PageFocus focus, String content) {
         int currentPage = this.currentPage + focus.focusVal;
+        if(!MainUtil.classicBook() && (this.totalPages & 1) == 1)
+            newPage(true);
+
         if(this.pages != null && currentPage >= 0 && currentPage < this.pages.size()) {
             ((NbtString)this.pages.get(currentPage)).value = content;
             this.modified = true;
