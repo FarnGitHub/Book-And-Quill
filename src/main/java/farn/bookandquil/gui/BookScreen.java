@@ -28,7 +28,7 @@ public class BookScreen extends Screen {
     protected final int titleImageWidth = 192;
     protected final int bookImageWidth = 344;
     protected final int imageHeight = 192;
-    protected int totalPages = increment(0);
+    protected int totalPages;
     protected int currentPage = 0;
     protected NbtList pages;
     protected String title = "";
@@ -48,16 +48,12 @@ public class BookScreen extends Screen {
             currentPage = -1;
         }
 
-        if(book.getStationNbt() != null) {
-            this.pages = book.getStationNbt().getList("pages").copy();
-            if(this.pages != null) {
-                int increment = increment(0);
-                if(this.pages.value.isEmpty())
-                    for(int i = 0; i < increment; ++i)
-                        this.pages.add(new NbtString(""));
-                this.totalPages = Math.max(increment, this.pages.size());
-            }
-        }
+        this.pages = book.getStationNbt().getList("pages").copy();
+        int needToAdd = increment(0) - this.pages.size();
+        if(needToAdd > 0)
+            for(int i = 0; i < needToAdd; ++i)
+                this.pages.add(new NbtString(""));
+        this.totalPages = this.pages.size();
     }
 
     @Override
@@ -268,8 +264,6 @@ public class BookScreen extends Screen {
 
     private void setContent(PageFocus focus, String content) {
         int currentPage = this.currentPage + focus.focusVal;
-        if(focus == PageFocus.SECOND && currentPage >= this.pages.size())
-            newPage(true);
         if(this.pages != null && currentPage >= 0 && currentPage < this.pages.size()) {
             ((NbtString)this.pages.get(currentPage)).value = content;
             this.modified = true;
@@ -401,7 +395,7 @@ public class BookScreen extends Screen {
                     ("§0" + "_") : ("§7" + "_");
             if(pageFocus == PageFocus.SECOND) {
                 content2 = content2 + underscore;
-            } else {
+            } else if(pageFocus == PageFocus.FIRST) {
                 content1 = content1 + underscore;
             }
         }
@@ -414,15 +408,15 @@ public class BookScreen extends Screen {
     }
 
     public void drawTextureAlt(int x, int y, int u, int v, int width, int height) {
-        float var7 = 0.001953125F;
-        float var8 = 0.00390625F;
-        Tessellator var9 = Tessellator.INSTANCE;
-        var9.startQuads();
-        var9.vertex(x, y + height, this.zOffset, (float)(u) * var7, (float)(v + height) * var8);
-        var9.vertex(x + width, y + height, this.zOffset, (float)(u + width) * var7, (float)(v + height) * var8);
-        var9.vertex(x + width, y, this.zOffset, (float)(u + width) * var7, (float)(v) * var8);
-        var9.vertex(x, y, this.zOffset, (float)(u) * var7, (float)(v) * var8);
-        var9.draw();
+        float var7 = 0.0029296875F;
+        float var8 = 0.00520833333F;
+        Tessellator tess = Tessellator.INSTANCE;
+        tess.startQuads();
+        tess.vertex(x, y + height, this.zOffset, (float)(u) * var7, (float)(v + height) * var8);
+        tess.vertex(x + width, y + height, this.zOffset, (float)(u + width) * var7, (float)(v + height) * var8);
+        tess.vertex(x + width, y, this.zOffset, (float)(u + width) * var7, (float)(v) * var8);
+        tess.vertex(x, y, this.zOffset, (float)(u) * var7, (float)(v) * var8);
+        tess.draw();
     }
 
     public static int increment(int integer) {
