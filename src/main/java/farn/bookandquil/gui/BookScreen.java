@@ -28,7 +28,7 @@ public class BookScreen extends Screen {
     protected final int titleImageWidth = 192;
     protected final int bookImageWidth = 344;
     protected final int imageHeight = 192;
-    protected int totalPages = 2;
+    protected int totalPages = increment(0);
     protected int currentPage = 0;
     protected NbtList pages;
     protected String title = "";
@@ -49,14 +49,13 @@ public class BookScreen extends Screen {
         }
 
         if(book.getStationNbt() != null) {
-            this.pages = book.getStationNbt().getList("pages");
+            this.pages = book.getStationNbt().getList("pages").copy();
             if(this.pages != null) {
-                this.pages = this.pages.copy();
-                if(this.pages.value.isEmpty()) {
-                    this.pages.add(new NbtString(""));
-                    this.pages.add(new NbtString(""));
-                } else
-                    this.totalPages = this.pages.size();
+                int increment = increment(0);
+                if(this.pages.value.isEmpty())
+                    for(int i = 0; i < increment; ++i)
+                        this.pages.add(new NbtString(""));
+                this.totalPages = Math.max(increment, this.pages.size());
             }
         }
     }
@@ -131,9 +130,9 @@ public class BookScreen extends Screen {
                     if(!(
                          this.pages.get(this.pages.size() - 1)
                          instanceof NbtString stringNbt)
-                    ) return;
+                    ) break;
 
-                    if(stringNbt.value != null && !stringNbt.value.isEmpty())
+                    if(!stringNbt.value.isEmpty())
                         break;
 
                     this.pages.value.remove(this.pages.size() - 1);
@@ -163,15 +162,15 @@ public class BookScreen extends Screen {
             } else if(button.id == 1) {
                 int currentPage = this.currentPage + (MainUtil.classicBook() ? 0 : 1);
                 if (currentPage < this.totalPages - 1) {
-                    this.currentPage += incrementPage(this.currentPage);
+                    this.currentPage += increment(this.currentPage);
                 } else if(this.writable) {
                     this.newPage(MainUtil.classicBook());
                     if(currentPage < this.totalPages - 1)
-                        this.currentPage += incrementPage(this.currentPage);
+                        this.currentPage += increment(this.currentPage);
                 }
             } else if(button.id == 2) {
                 if(this.currentPage > -1) {
-                    this.currentPage -= incrementPage(this.currentPage);
+                    this.currentPage -= increment(this.currentPage);
                     if(this.currentPage < -1) {
                         this.currentPage = -1;
                     }
@@ -189,7 +188,7 @@ public class BookScreen extends Screen {
 
     private void newPage(boolean incrementByOne) {
         if(this.pages != null && this.pages.size() < 50) {
-            int increment = incrementByOne ? 1 : incrementPage(this.totalPages);
+            int increment = incrementByOne ? 1 : increment(this.totalPages);
             for(int i = 0; i < increment; ++i)
                 this.pages.add(new NbtString(""));
             this.totalPages += increment;
@@ -384,7 +383,7 @@ public class BookScreen extends Screen {
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/double_book.png"));
         int bookX = (this.width - this.bookImageWidth) / 2;
         this.drawTextureAlt(bookX, 2, 0, 0, this.bookImageWidth, this.imageHeight);
-        int total = this.totalPages;
+        int total = getTotalDisplay();
         String pageIndicator1 = MainUtil.translate("book.pageIndicator", this.currentPage + 1, total);
         String pageIndicator2 = MainUtil.translate("book.pageIndicator", this.currentPage + 2, total);
         String content1 = "";
@@ -426,7 +425,15 @@ public class BookScreen extends Screen {
         var9.draw();
     }
 
-    public static int incrementPage(int integer) {
+    public static int increment(int integer) {
         return (integer & 1) == 1 || MainUtil.classicBook() ? 1 : 2;
+    }
+
+    public int getTotalDisplay() {
+         return Math.max(
+                 increment(0),
+                 (totalPages & 1) == 1 && !MainUtil.classicBook() ?
+                 this.totalPages + 1 : totalPages
+         );
     }
 }
