@@ -4,14 +4,12 @@ import farn.bookandquil.item.WritableBookItem;
 import farn.bookandquil.packet.BookContentC2SPacket;
 import farn.bookandquil.item.WrittenBookItem;
 import farn.bookandquil.packet.SigningBookC2SPacket;
+import farn.bookandquil.util.MainUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.mine_diver.unsafeevents.listener.EventListener;
-import net.minecraft.client.resource.language.TranslationStorage;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.modificationstation.stationapi.api.client.event.texture.TextureRegisterEvent;
 import net.modificationstation.stationapi.api.event.container.slot.ItemUsedInCraftingEvent;
 import net.modificationstation.stationapi.api.event.network.packet.PacketRegisterEvent;
@@ -25,10 +23,8 @@ import net.modificationstation.stationapi.api.util.Null;
 import net.modificationstation.stationapi.api.mod.entrypoint.Entrypoint;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-
 @SuppressWarnings("unused")
-public class BookAndQuil {
+public class BookAndQuill {
     @Entrypoint.Namespace
     public static Namespace NAMESPACE;
 
@@ -68,37 +64,9 @@ public class BookAndQuil {
 
     @EventListener
     public void afterCrafting(ItemUsedInCraftingEvent event) {
-        if(isCopiedBook(event.itemCrafted) && isWrittenBook(event.itemUsed)) {
+        if(MainUtil.isCopiedBook(event.itemCrafted) && MainUtil.isWrittenBook(event.itemUsed)) {
             event.craftingMatrix.setStack(event.itemOrdinal, event.itemUsed);
         }
-    }
-
-    public static String translate(String string) {
-        return TranslationStorage.getInstance().get("bookandquill." + string);
-    }
-
-    public static String translateFormat(String string, Object... var1) {
-        return TranslationStorage.getInstance().get("bookandquill." + string, var1);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static boolean validContent(NbtList listNbt) {
-        if(listNbt == null) return false;
-        List<NbtString> list = listNbt.value;
-
-        for(NbtString content : list)
-            if(content.value == null || content.value.length() > 256)
-                return false;
-
-        return true;
-    }
-
-    public static boolean isCopiedBook(ItemStack stack) {
-        return isWrittenBook(stack) && stack.getStationNbt().getBoolean("copy");
-    }
-
-    public static boolean isWrittenBook(ItemStack stack) {
-        return stack != null && stack.getItem() instanceof WrittenBookItem;
     }
 
 }

@@ -1,6 +1,6 @@
 package farn.bookandquil.mixin;
 
-import farn.bookandquil.recipe.BookCloning;
+import farn.bookandquil.util.MainUtil;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.CraftingRecipeManager;
@@ -14,7 +14,7 @@ public class CraftRecipeManagerMixin {
 
     @Inject(method="craft", at = @At("HEAD"), cancellable = true)
     public void bookandquill_craftCopy(CraftingInventory inv, CallbackInfoReturnable<ItemStack> cir) {
-        ItemStack stack = BookCloning.getCraftingResult(inv);
+        ItemStack stack = MainUtil.createClonedBook(inv);
         if(stack != null)
             cir.setReturnValue(stack);
     }

@@ -6,7 +6,7 @@ public class WritableBookItem extends AbstractBookItem {
     }
 
     @Override
-    boolean writable() {
+    public boolean writable() {
         return true;
     }
 

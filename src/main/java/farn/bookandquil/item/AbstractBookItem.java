@@ -1,6 +1,6 @@
 package farn.bookandquil.item;
 
-import farn.bookandquil.BookAndQuil;
+import farn.bookandquil.BookAndQuill;
 import farn.bookandquil.gui.BookScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -13,7 +13,7 @@ import net.modificationstation.stationapi.api.template.item.TemplateItem;
 
 public abstract class AbstractBookItem extends TemplateItem {
     public AbstractBookItem(String id) {
-        super(BookAndQuil.NAMESPACE.id(id));
+        super(BookAndQuill.NAMESPACE.id(id));
         this.setMaxCount(1);
     }
 

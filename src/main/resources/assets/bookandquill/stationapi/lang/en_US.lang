@@ -6,3 +6,5 @@ bookandquill.book.signButton=Sign
 bookandquill.book.editTitle=Enter Book Title:
 bookandquill.book.finalizeButton=Sign and Close
 bookandquill.book.finalizeWarning=Note! When you sign the book, it will no longer be editable.
+bookandquill.book.no.title=No Title
+bookandquill.book.unknown.author=Unknown Author

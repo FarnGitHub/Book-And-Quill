@@ -13,7 +13,10 @@
   "accessWidener": "bookandquill.classTweaker",
   "entrypoints": {
     "stationapi:event_bus": [
-      "farn.bookandquil.BookAndQuil"
+      "farn.bookandquil.BookAndQuill"
+    ],
+    "gcapi3": [
+      "farn.bookandquil.config.ConfigListener"
     ]
   },
   "mixins": [

@@ -1,6 +1,6 @@
 package farn.bookandquil.item;
 
-import farn.bookandquil.BookAndQuil;
+import farn.bookandquil.util.MainUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.modificationstation.stationapi.api.client.item.CustomTooltipProvider;
@@ -14,7 +14,7 @@ public class WrittenBookItem extends AbstractBookItem implements CustomTooltipPr
     }
 
     @Override
-    boolean writable() {
+    public boolean writable() {
         return false;
     }
 
@@ -35,7 +35,7 @@ public class WrittenBookItem extends AbstractBookItem implements CustomTooltipPr
                 } else {
                     String author = nbt.getString("author");
                     if(author != null && !author.isEmpty()) {
-                        list.add("§8" + BookAndQuil.translateFormat("book.byAuthor", author));
+                        list.add("§8" + MainUtil.translate("book.byAuthor", author));
                     }
                 }
             }
