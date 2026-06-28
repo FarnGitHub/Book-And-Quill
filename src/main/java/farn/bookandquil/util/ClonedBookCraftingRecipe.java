@@ -22,53 +22,13 @@ public class ClonedBookCraftingRecipe extends ShapelessRecipe {
     }
 
     public boolean matches(CraftingInventory inv) {
-        boolean hasWritableBook = false;
-        ItemStack theBook = null;
-
-        for (int index = 0; index < inv.size(); ++index) {
-            ItemStack curStack = inv.getStack(index);
-
-            if (curStack != null) {
-                if (curStack.getItem() instanceof WrittenBookItem) {
-                    if (theBook != null)
-                        return false;
-
-                    theBook = curStack;
-                } else if(curStack.getItem() instanceof WritableBookItem) {
-                    if(hasWritableBook)
-                        return false;
-
-                    hasWritableBook = true;
-                }
-            }
-        }
-
-        return theBook != null && hasWritableBook;
+        return getOriginalBook(inv) != null;
     }
 
     public ItemStack craft(CraftingInventory inv) {
-        boolean hasWritableBook = false;
-        ItemStack theBook = null;
+        ItemStack theBook = getOriginalBook(inv);
 
-        for (int index = 0; index < inv.size(); ++index) {
-            ItemStack curStack = inv.getStack(index);
-
-            if (curStack != null) {
-                if (curStack.getItem() instanceof WrittenBookItem) {
-                    if (theBook != null)
-                        return null;
-
-                    theBook = curStack;
-                } else if(curStack.getItem() instanceof WritableBookItem) {
-                    if(hasWritableBook)
-                        return null;
-
-                    hasWritableBook = true;
-                }
-            }
-        }
-
-        if (theBook != null && hasWritableBook) {
+        if (theBook != null) {
             ItemStack stack = new ItemStack(BookAndQuill.WRITTEN_BOOK, 1);
             StationNBTSetter.cast(stack).setStationNbt(theBook.getStationNbt().copy());
             stack.getStationNbt().putBoolean("copy", true);
@@ -76,6 +36,31 @@ public class ClonedBookCraftingRecipe extends ShapelessRecipe {
         } else {
             return null;
         }
+    }
+
+    public static ItemStack getOriginalBook(CraftingInventory inv) {
+        boolean hasWritableBook = false;
+        ItemStack theBook = null;
+
+        for (int index = 0; index < inv.size(); ++index) {
+            ItemStack curStack = inv.getStack(index);
+
+            if (curStack != null) {
+                if (curStack.getItem() instanceof WrittenBookItem) {
+                    if (theBook != null)
+                        return null;
+
+                    theBook = curStack;
+                } else if(curStack.getItem() instanceof WritableBookItem) {
+                    if(hasWritableBook)
+                        return null;
+
+                    hasWritableBook = true;
+                }
+            }
+        }
+
+        return hasWritableBook ? theBook : null;
     }
 
     private static ItemStack copiedBook() {
