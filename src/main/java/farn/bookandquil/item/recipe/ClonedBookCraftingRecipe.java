@@ -1,4 +1,4 @@
-package farn.bookandquil.util;
+package farn.bookandquil.item.recipe;
 
 import farn.bookandquil.BookAndQuill;
 import farn.bookandquil.item.WritableBookItem;

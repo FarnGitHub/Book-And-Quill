@@ -24,7 +24,7 @@ public class MainUtil {
 
     @SuppressWarnings("unchecked")
     public static boolean validContent(NbtList listNbt) {
-        if(listNbt == null) return false;
+        if(listNbt == null || listNbt.size() > 50) return false;
         List<NbtElement> list = listNbt.value;
 
         for(NbtElement content : list)

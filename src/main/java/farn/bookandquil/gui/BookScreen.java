@@ -50,35 +50,12 @@ public class BookScreen extends Screen {
 
         this.pages = book.getStationNbt().getList("pages").copy();
         int needToAdd = increment(0) - this.pages.size();
-        if(needToAdd > 0)
-            for(int i = 0; i < needToAdd; ++i)
+        if(needToAdd > 0) {
+            for (int i = 0; i < needToAdd; ++i)
                 this.pages.add(new NbtString(""));
+        } else if(!MainUtil.classicBook() && (this.pages.size() & 1) == 1)
+            this.pages.add(new NbtString(""));
         this.totalPages = this.pages.size();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void init() {
-        this.buttons.clear();
-        Keyboard.enableRepeatEvents(true);
-        if(this.writable) {
-            this.buttons.add(this.signButton = new ButtonWidget(3, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.signButton")));
-            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.done")));
-            this.buttons.add(this.finalizeButton = new ButtonWidget(5, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.finalizeButton")));
-            this.buttons.add(this.cancelButton = new ButtonWidget(4, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.cancel")));
-        } else
-            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 - 100, 4 + this.imageHeight, 200, 20, TranslationStorage.getInstance().get("gui.done")));
-
-        int xOffset1 = (this.width - this.titleImageWidth) / 2;
-        int xOffset2 = (this.width - this.bookImageWidth) / 2;
-        this.buttons.add(this.nextButton = new PageButton(1, xOffset1 + 120, 156, true, xOffset2 + 272));
-        this.buttons.add(this.previousButton = new PageButton(2, xOffset1 + 38, 156, false, xOffset2 + 48));
-        this.buttonUpdate();
-    }
-
-    @Override
-    public void removed() {
-        Keyboard.enableRepeatEvents(false);
     }
 
     private void buttonUpdate() {
@@ -94,29 +71,6 @@ public class BookScreen extends Screen {
             this.finalizeButton.active = !this.title.trim().isEmpty();
         }
 
-    }
-
-    protected void mouseClicked(int x, int y, int b) {
-        if(MainUtil.classicBook()) {
-            this.pageFocus = PageFocus.FIRST;
-        } else if(this.writable) {
-            int fX = (this.width - this.bookImageWidth) / 2;
-            int sX = fX + (this.bookImageWidth / 2);
-            int yMin = 0;
-            int pageWidth = this.bookImageWidth / 2;
-            int yMax = this.imageHeight;
-            if(x >= fX && x < fX + pageWidth && y >= yMin && y < yMax) {
-                this.pageFocus = PageFocus.FIRST;
-            } else if(x >= sX && x < sX + pageWidth && y >= yMin && y < yMax) {
-                this.pageFocus = PageFocus.SECOND;
-            } else {
-                this.pageFocus = PageFocus.UNFOCUS;
-            }
-        } else {
-            this.pageFocus = PageFocus.UNFOCUS;
-        }
-
-        super.mouseClicked(x, y, b);
     }
 
     private void updateBookData(boolean signingBook) {
@@ -147,59 +101,13 @@ public class BookScreen extends Screen {
         }
     }
 
-    @Override
-    protected void buttonClicked(ButtonWidget button) {
-        if(button.visible && button.active) {
-            if(button.id == 0) {
-                this.minecraft.setScreen(null);
-                this.updateBookData(false);
-            } else if(button.id == 3 && this.writable) {
-                this.signing = true;
-            } else if(button.id == 1) {
-                int currentPage = this.currentPage + (MainUtil.classicBook() ? 0 : 1);
-                if (currentPage < this.totalPages - 1) {
-                    this.currentPage += increment(this.currentPage);
-                } else if(this.writable) {
-                    this.newPage(MainUtil.classicBook());
-                    if(currentPage < this.totalPages - 1)
-                        this.currentPage += increment(this.currentPage);
-                }
-            } else if(button.id == 2) {
-                if(this.currentPage > -1) {
-                    this.currentPage -= increment(this.currentPage);
-                    if(this.currentPage < -1) {
-                        this.currentPage = -1;
-                    }
-                }
-            } else if(button.id == 5 && this.signing) {
-                this.updateBookData(true);
-                this.minecraft.setScreen(null);
-            } else if(button.id == 4 && this.signing) {
-                this.signing = false;
-            }
-
-            this.buttonUpdate();
-        }
-    }
-
-    private void newPage(boolean incrementByOne) {
+    private void newPage() {
         if(this.pages != null && this.pages.size() < 50) {
-            int increment = incrementByOne ? 1 : increment(this.totalPages);
+            int increment = increment(this.totalPages);
             for(int i = 0; i < increment; ++i)
                 this.pages.add(new NbtString(""));
             this.totalPages += increment;
             this.modified = true;
-        }
-    }
-
-    @Override
-    protected void keyPressed(char character, int keyCode) {
-        super.keyPressed(character, keyCode);
-        if(this.writable) {
-            if(this.signing)
-                this.typeInSigning(character, keyCode);
-            else if(pageFocus != PageFocus.UNFOCUS)
-                this.typeInBook(pageFocus, character, keyCode);
         }
     }
 
@@ -264,9 +172,6 @@ public class BookScreen extends Screen {
 
     private void setContent(PageFocus focus, String content) {
         int currentPage = this.currentPage + focus.focusVal;
-        if(!MainUtil.classicBook() && (this.totalPages & 1) == 1)
-            newPage(true);
-
         if(this.pages != null && currentPage >= 0 && currentPage < this.pages.size()) {
             ((NbtString)this.pages.get(currentPage)).value = content;
             this.modified = true;
@@ -281,79 +186,59 @@ public class BookScreen extends Screen {
         }
     }
 
-    @Override
-    public void render(int mouseX, int mouseY, float tick) {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        if(currentPage <= -1 && !writable && !this.signing) {
-            int textColor = MainUtil.classicBook() ? 0 : -1;
-            int bookX = (this.width - this.titleImageWidth) / 2;
-            bindTitleBookTexture(bookX);
-            String title = this.book.getStationNbt().getString("title");
-            if(title.isEmpty()) {
-                title = MainUtil.translate("book.no.title");
-            }
-            String author = this.book.getStationNbt().getString("author");
-            if(author.isEmpty()) {
-                author = MainUtil.translate("book.unknown.author");
-            }
-
-            int titleWidth = this.textRenderer.getWidth(title);
-            this.textRenderer.draw(title, bookX + 36 + (116 - titleWidth) / 2, 50, textColor);
-            String authorFormat = MainUtil.translate("book.byAuthor", author);
-            int authorWidth = this.textRenderer.getWidth(authorFormat);
-            this.textRenderer.draw(authorFormat, bookX + 36 + (116 - authorWidth) / 2, 60, textColor);
-        } else if(this.signing) {
-            int textColor = MainUtil.classicBook() ? 0 : -1;
-            int bookX = (this.width - this.titleImageWidth) / 2;
-            bindTitleBookTexture(bookX);
-            this.drawTexture(bookX, 2, 0, 0, this.titleImageWidth, this.imageHeight);
-            String title = this.title;
-
-            if(this.writable) {
-                if(this.tick / 6 % 2 == 0) {
-                    title = title + "§0" + "_";
-                } else {
-                    title = title + "§7" + "_";
-                }
-            }
-            String editTitle = MainUtil.translate("book.editTitle");
-            int newTitleWidth = this.textRenderer.getWidth(editTitle);
-            this.textRenderer.draw(editTitle, bookX + 36 + (116 - newTitleWidth) / 2, 34, textColor);
-            int titleWidth = this.textRenderer.getWidth(title);
-            this.textRenderer.draw(title, bookX + 36 + (116 - titleWidth) / 2, 50, textColor);
-            String author = String.format(MainUtil.translate("book.byAuthor"), this.player.name);
-            int authorWidth = this.textRenderer.getWidth(author);
-            this.textRenderer.draw(author, bookX + 36 + (116 - authorWidth) / 2, 60, textColor);
-            String warningFinal = MainUtil.translate("book.finalizeWarning");
-            this.textRenderer.drawSplit(warningFinal, bookX + 36, 82, 116, textColor);
-        } else {
-            if(MainUtil.classicBook()) {
-                renderSingleBook();
-            } else {
-                renderDoubleBook();
-            }
-        }
-
-        super.render(mouseX, mouseY, tick);
-    }
-
-    public void tick() {
-        super.tick();
-        ++this.tick;
-    }
-
-    @Override
-    public boolean shouldPause() {
-        return MainUtil.shouldPause();
-    }
-
-    public void bindTitleBookTexture(int bookX) {
+    public void bindSignedBookTexture(int bookX) {
         String tex = MainUtil.classicBook() ? "/assets/bookandquill/gui/legacy_book.png" : "/assets/bookandquill/gui/title_book.png";
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId(tex));
         this.drawTexture(bookX, 2, 0, 0, this.titleImageWidth, this.imageHeight);
     }
 
-    public void renderSingleBook() {
+    public void renderBookCover() {
+        int textColor = MainUtil.classicBook() ? 0 : -1;
+        int bookX = (this.width - this.titleImageWidth) / 2;
+        bindSignedBookTexture(bookX);
+        String title = this.book.getStationNbt().getString("title");
+        if(title.isEmpty()) {
+            title = MainUtil.translate("book.no.title");
+        }
+        String author = this.book.getStationNbt().getString("author");
+        if(author.isEmpty()) {
+            author = MainUtil.translate("book.unknown.author");
+        }
+
+        int titleWidth = this.textRenderer.getWidth(title);
+        this.textRenderer.draw(title, bookX + 36 + (116 - titleWidth) / 2, 50, textColor);
+        String authorFormat = MainUtil.translate("book.byAuthor", author);
+        int authorWidth = this.textRenderer.getWidth(authorFormat);
+        this.textRenderer.draw(authorFormat, bookX + 36 + (116 - authorWidth) / 2, 60, textColor);
+    }
+
+    public void renderSigning() {
+        int textColor = MainUtil.classicBook() ? 0 : -1;
+        int bookX = (this.width - this.titleImageWidth) / 2;
+        bindSignedBookTexture(bookX);
+        this.drawTexture(bookX, 2, 0, 0, this.titleImageWidth, this.imageHeight);
+        String title = this.title;
+
+        if(this.writable) {
+            if(this.tick / 6 % 2 == 0) {
+                title = title + "§0" + "_";
+            } else {
+                title = title + "§7" + "_";
+            }
+        }
+        String editTitle = MainUtil.translate("book.editTitle");
+        int newTitleWidth = this.textRenderer.getWidth(editTitle);
+        this.textRenderer.draw(editTitle, bookX + 36 + (116 - newTitleWidth) / 2, 34, textColor);
+        int titleWidth = this.textRenderer.getWidth(title);
+        this.textRenderer.draw(title, bookX + 36 + (116 - titleWidth) / 2, 50, textColor);
+        String author = String.format(MainUtil.translate("book.byAuthor"), this.player.name);
+        int authorWidth = this.textRenderer.getWidth(author);
+        this.textRenderer.draw(author, bookX + 36 + (116 - authorWidth) / 2, 60, textColor);
+        String warningFinal = MainUtil.translate("book.finalizeWarning");
+        this.textRenderer.drawSplit(warningFinal, bookX + 36, 82, 116, textColor);
+    }
+
+    public void renderClassic() {
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/legacy_book.png"));
         int bookX = (this.width - this.titleImageWidth) / 2;
         this.drawTexture(bookX, 2, 0, 0, this.titleImageWidth, this.imageHeight);
@@ -376,7 +261,7 @@ public class BookScreen extends Screen {
         this.textRenderer.drawSplit(content, bookX + 36, 34, 116, 0);
     }
 
-    public void renderDoubleBook() {
+    public void renderDouble() {
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/double_book.png"));
         int bookX = (this.width - this.bookImageWidth) / 2;
         this.drawTextureAlt(bookX, 2, 0, 0, this.bookImageWidth, this.imageHeight);
@@ -432,5 +317,128 @@ public class BookScreen extends Screen {
                  (totalPages & 1) == 1 && !MainUtil.classicBook() ?
                  this.totalPages + 1 : totalPages
          );
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void init() {
+        this.buttons.clear();
+        Keyboard.enableRepeatEvents(true);
+        if(this.writable) {
+            this.buttons.add(this.signButton = new ButtonWidget(3, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.signButton")));
+            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.done")));
+            this.buttons.add(this.finalizeButton = new ButtonWidget(5, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.finalizeButton")));
+            this.buttons.add(this.cancelButton = new ButtonWidget(4, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.cancel")));
+        } else
+            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 - 100, 4 + this.imageHeight, 200, 20, TranslationStorage.getInstance().get("gui.done")));
+
+        int xOffset1 = (this.width - this.titleImageWidth) / 2;
+        int xOffset2 = (this.width - this.bookImageWidth) / 2;
+        this.buttons.add(this.nextButton = new PageButton(1, xOffset1 + 120, 156, true, xOffset2 + 272));
+        this.buttons.add(this.previousButton = new PageButton(2, xOffset1 + 38, 156, false, xOffset2 + 48));
+        this.buttonUpdate();
+    }
+
+    @Override
+    public void render(int mouseX, int mouseY, float tick) {
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        if(currentPage <= -1 && !writable && !this.signing)
+            renderBookCover();
+        else if(this.signing)
+            renderSigning();
+        else if(MainUtil.classicBook())
+            renderClassic();
+        else
+            renderDouble();
+
+        super.render(mouseX, mouseY, tick);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        ++this.tick;
+    }
+
+    @Override
+    public boolean shouldPause() {
+        return MainUtil.shouldPause();
+    }
+
+    @Override
+    protected void keyPressed(char character, int keyCode) {
+        super.keyPressed(character, keyCode);
+        if(this.writable) {
+            if(this.signing)
+                this.typeInSigning(character, keyCode);
+            else if(pageFocus != PageFocus.UNFOCUS)
+                this.typeInBook(pageFocus, character, keyCode);
+        }
+    }
+
+    @Override
+    protected void buttonClicked(ButtonWidget button) {
+        if(button.visible && button.active) {
+            if(button.id == 0) {
+                this.minecraft.setScreen(null);
+                this.updateBookData(false);
+            } else if(button.id == 3 && this.writable) {
+                this.signing = true;
+            } else if(button.id == 1) {
+                int currentPage = this.currentPage + (MainUtil.classicBook() ? 0 : 1);
+                if (currentPage < this.totalPages - 1) {
+                    this.currentPage += increment(this.currentPage);
+                } else if(this.writable) {
+                    this.newPage();
+                    if(currentPage < this.totalPages - 1)
+                        this.currentPage += increment(this.currentPage);
+                }
+            } else if(button.id == 2) {
+                if (this.currentPage > -1) {
+                    this.currentPage -= increment(this.currentPage);
+                    if (this.currentPage < -1) {
+                        this.currentPage = -1;
+                    }
+                }
+            } else if(button.id == 6) {
+                this.minecraft.setScreen(null);
+            } else if(button.id == 5 && this.signing) {
+                this.updateBookData(true);
+                this.minecraft.setScreen(null);
+            } else if(button.id == 4 && this.signing) {
+                this.signing = false;
+            }
+
+            this.buttonUpdate();
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int x, int y, int b) {
+        if(MainUtil.classicBook()) {
+            this.pageFocus = PageFocus.FIRST;
+        } else if(this.writable) {
+            int fX = (this.width - this.bookImageWidth) / 2;
+            int sX = fX + (this.bookImageWidth / 2);
+            int yMin = 0;
+            int pageWidth = this.bookImageWidth / 2;
+            int yMax = this.imageHeight;
+            if(x >= fX && x < fX + pageWidth && y >= yMin && y < yMax) {
+                this.pageFocus = PageFocus.FIRST;
+            } else if(x >= sX && x < sX + pageWidth && y >= yMin && y < yMax) {
+                this.pageFocus = PageFocus.SECOND;
+            } else {
+                this.pageFocus = PageFocus.UNFOCUS;
+            }
+        } else {
+            this.pageFocus = PageFocus.UNFOCUS;
+        }
+
+        super.mouseClicked(x, y, b);
+    }
+
+    @Override
+    public void removed() {
+        Keyboard.enableRepeatEvents(false);
     }
 }

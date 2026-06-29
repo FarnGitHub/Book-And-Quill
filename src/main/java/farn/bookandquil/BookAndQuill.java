@@ -4,7 +4,7 @@ import farn.bookandquil.item.WritableBookItem;
 import farn.bookandquil.packet.BookContentC2SPacket;
 import farn.bookandquil.item.WrittenBookItem;
 import farn.bookandquil.packet.SigningBookC2SPacket;
-import farn.bookandquil.util.ClonedBookCraftingRecipe;
+import farn.bookandquil.item.recipe.ClonedBookCraftingRecipe;
 import farn.bookandquil.util.MainUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
