@@ -9,10 +9,10 @@ public class ConfigListener {
     public static Inside get = new Inside();
 
     public static class Inside {
-        @ConfigEntry(name="Pause while writing", description = "Pause the game while in Book And Quill screen")
+        @ConfigEntry(name="Pause while writing (SP Only)", description = "Pause the game while in the screen")
         public Boolean pauseGame = false;
 
-        @ConfigEntry(name="Classic Book Screen")
+        @ConfigEntry(name="Classic Book Screen", description = "Use the java edition book and quill screen")
         public Boolean classicBook = false;
     }
 }

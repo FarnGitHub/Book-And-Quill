@@ -1,21 +1,23 @@
 package farn.bookandquil.gui;
 
-import farn.bookandquil.util.MainUtil;
+import farn.bookandquil.gui.screen.BookScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import org.lwjgl.opengl.GL11;
 
-class PageButton extends ButtonWidget {
+public class PageButton extends ButtonWidget {
 	private final boolean nextButton;
 	private final int titleX;
 	private final int altX;
 	private boolean title;
+	private final BookScreen bookScreen;
 
-	public PageButton(int id, int x, int y, boolean next, int altX) {
+	public PageButton(int id, int x, int y, boolean next, int altX, BookScreen screen) {
 		super(id, x, y, 23, 13, "");
 		this.nextButton = next;
 		this.titleX = x;
 		this.altX = altX;
+		this.bookScreen = screen;
 	}
 
 	public void render(Minecraft mc, int mouseX, int mouseY) {
@@ -26,7 +28,7 @@ class PageButton extends ButtonWidget {
 			int v = 192;
 			if(mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height) {
 				u += 23;
-			} else if(!MainUtil.classicBook() && this.title) {
+			} else if(!this.bookScreen.singlePage() && this.title) {
 				u += 46;
 			}
 

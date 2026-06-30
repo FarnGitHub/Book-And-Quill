@@ -1,7 +1,7 @@
 package farn.bookandquil.item;
 
 import farn.bookandquil.BookAndQuill;
-import farn.bookandquil.gui.BookScreen;
+import farn.bookandquil.gui.screen.BookScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -13,14 +13,14 @@ import net.modificationstation.stationapi.api.template.item.TemplateItem;
 
 public abstract class AbstractBookItem extends TemplateItem {
     public AbstractBookItem(String id) {
-        super(BookAndQuill.NAMESPACE.id(id));
+        super(BookAndQuill.id(id));
         this.setMaxCount(1);
     }
 
     @Environment(EnvType.CLIENT)
     public ItemStack use(ItemStack stack, World world, PlayerEntity user) {
         if(user instanceof ClientPlayerEntity)
-            Minecraft.INSTANCE.setScreen(new BookScreen(user, stack, writable()));
+            Minecraft.INSTANCE.setScreen(BookScreen.get(user, stack, writable()));
         return stack;
     }
 

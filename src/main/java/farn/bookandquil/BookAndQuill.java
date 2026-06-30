@@ -18,8 +18,7 @@ import net.modificationstation.stationapi.api.event.network.packet.PacketRegiste
 import net.modificationstation.stationapi.api.event.recipe.RecipeRegisterEvent;
 import net.modificationstation.stationapi.api.event.registry.ItemRegistryEvent;
 import net.modificationstation.stationapi.api.recipe.CraftingRegistry;
-import net.modificationstation.stationapi.api.registry.PacketTypeRegistry;
-import net.modificationstation.stationapi.api.registry.Registry;
+import net.modificationstation.stationapi.api.util.Identifier;
 import net.modificationstation.stationapi.api.util.Namespace;
 import net.modificationstation.stationapi.api.util.Null;
 import net.modificationstation.stationapi.api.mod.entrypoint.Entrypoint;
@@ -38,21 +37,23 @@ public class BookAndQuill {
 
     @EventListener
     public void registerItems(ItemRegistryEvent event) {
-        BOOK_AND_QUILL = new WritableBookItem("writable_book").setTranslationKey(NAMESPACE, "writable_book");
-        WRITTEN_BOOK = new WrittenBookItem("written_book").setTranslationKey(NAMESPACE, "written_book");
+        BOOK_AND_QUILL = new WritableBookItem("writable_book").
+                        setTranslationKey(NAMESPACE, "writable_book");
+        WRITTEN_BOOK = new WrittenBookItem("written_book").
+                        setTranslationKey(NAMESPACE, "written_book");
     }
 
     @EventListener
     public void registerPacket(PacketRegisterEvent event) {
-        Registry.register(PacketTypeRegistry.INSTANCE, NAMESPACE.id("writable_book_packet"), BookContentC2SPacket.TYPE);
-        Registry.register(PacketTypeRegistry.INSTANCE, NAMESPACE.id("written_book_packet"), SigningBookC2SPacket.TYPE);
+        event.register(id("writable_book_packet"), BookContentC2SPacket.TYPE);
+        event.register(id("written_book_packet"), SigningBookC2SPacket.TYPE);
     }
 
     @Environment(EnvType.CLIENT)
     @EventListener
     public void registerTextures(TextureRegisterEvent event) {
-        BOOK_AND_QUILL.setTexture(NAMESPACE.id("item/writingBook"));
-        WRITTEN_BOOK.setTexture(NAMESPACE.id("item/writtenBook"));
+        BOOK_AND_QUILL.setTexture(id("item/writingBook"));
+        WRITTEN_BOOK.setTexture(id("item/writtenBook"));
     }
 
     @EventListener
@@ -72,6 +73,10 @@ public class BookAndQuill {
         if(MainUtil.isCopiedBook(event.itemCrafted) && MainUtil.isWrittenBook(event.itemUsed)) {
             event.craftingMatrix.setStack(event.itemOrdinal, event.itemUsed);
         }
+    }
+
+    public static Identifier id(String id) {
+        return NAMESPACE.id(id);
     }
 
 }
