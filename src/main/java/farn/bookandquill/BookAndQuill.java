@@ -20,7 +20,7 @@ public class BookAndQuill {
     public static final String VERSION = "1.1";
     public static final String NAME = "Book And Quill";
     public static final String DESCRIPTION = "Add Book And Quill to b1.7.3";
-    public static final String ICON_PATH = "farn/bookandquill/resource/icon.png";
+    public static final String ICON_PATH = "/assets/bookandquill/icon.png";
 
     private BookAndQuill() {
         throw new AssertionError();
@@ -33,12 +33,12 @@ public class BookAndQuill {
 
         writableBook = new ItemWritableBook(mod_BookAndQuill.bookAndQuilID).setItemName("farn.code.bookandquill.writablebook");
         ModLoader.AddLocalization(writableBook.getItemName() + ".name", "Book And Quill");
-        writableBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/farn/bookandquill/resource/writingBook.png"));
+        writableBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/assets/bookandquill/textures/item/writingBook.png"));
 
         //Written Book Item
         writtenBook = new ItemWrittenBook(mod_BookAndQuill.writtenBookID).setItemName("farn.code.bookandquill.writtenbook");
         ModLoader.AddLocalization(writtenBook.getItemName() + ".name", "Written Book");
-        writtenBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/farn/bookandquill/resource/writtenBook.png"));
+        writtenBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/assets/bookandquill/textures/item/writtenBook.png"));
 
         //Book And Quill Recipe
         ModLoader.AddShapelessRecipe(new ItemStack(writableBook, 1), Item.book, new ItemStack(Item.dyePowder, 1, 0), Item.feather);

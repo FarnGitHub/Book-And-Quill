@@ -23,7 +23,7 @@ class GuiPageButton extends GuiButton {
 		if(this.enabled2) {
 			boolean mouseOver = x >= this.xPosition && y >= this.yPosition && x < this.xPosition + this.width && y < this.yPosition + this.height;
 			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-			mc.renderEngine.bindTexture(mc.renderEngine.getTexture("/farn/bookandquill/resource/bookGui.png"));
+			mc.renderEngine.bindTexture(mc.renderEngine.getTexture("/assets/bookandquill/gui/title_book.png"));
 			int textureU = 0;
 			int textureV = 192;
 			if(mouseOver) {
