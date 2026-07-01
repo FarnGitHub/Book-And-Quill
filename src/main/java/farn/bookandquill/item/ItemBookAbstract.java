@@ -1,6 +1,6 @@
 package farn.bookandquill.item;
 
-import farn.bookandquill.gui.GuiScreenBook;
+import farn.bookandquill.gui.GuiBook;
 import net.minecraft.src.*;
 
 public abstract class ItemBookAbstract extends Item {
@@ -14,7 +14,7 @@ public abstract class ItemBookAbstract extends Item {
 
     @Override
     public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
-        ModLoader.OpenGUI(player, new GuiScreenBook(player, stack, isWritable()));
+        ModLoader.OpenGUI(player, GuiBook.get(player, stack, isWritable()));
         return stack;
     }
 }

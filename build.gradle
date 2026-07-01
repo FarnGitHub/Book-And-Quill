@@ -5,7 +5,9 @@ plugins {
 
 group = project.property('group')
 version = project.property('version')
-base.archivesBaseName = project.property('modid')
+base {
+    archivesName = project.property('modid')
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -54,7 +56,6 @@ unimined {
         }
 
         jarMod {
-            transforms "${modid}.transform"
         }
 
         runs {
@@ -72,13 +73,4 @@ dependencies {
 
     // Any mods in the jarmods folder are automatically added as dependencies
     jarMod fileTree(dir: 'jarmods', include: ['*.jar', '*.zip'])
-}
-
-jar {
-    manifest {
-        attributes(
-                'JarModAgent-Transforms': "${modid}.transform",
-                'JarModAgent-Refmaps': "${modid}-refmap.json"
-        )
-    }
 }

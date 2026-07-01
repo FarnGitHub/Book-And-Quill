@@ -2,14 +2,12 @@ package farn.bookandquill.forge;
 
 import farn.bookandquill.item.ItemWrittenBook;
 import forge.ICraftingHandler;
-import net.minecraft.src.EntityPlayer;
-import net.minecraft.src.IInventory;
-import net.minecraft.src.ItemStack;
+import forge.MinecraftForge;
+import net.minecraft.src.*;
 
 public class BookAndQuillCraftingHandler implements ICraftingHandler {
-    @Override
-    public void onTakenFromCrafting(EntityPlayer player, ItemStack output, IInventory matrix) {
-        if(isCopyBook(output)) {
+    public void onTakenFromCrafting(EntityPlayer entityPlayer, ItemStack output, IInventory matrix) {
+        if(matrix != null && isCopyBook(output)) {
             for(int i = 0; i < matrix.getSizeInventory(); i++) {
                 ItemStack stack = matrix.getStackInSlot(i);
                 if(isWrittenBook(stack)) ++stack.stackSize;
@@ -17,11 +15,15 @@ public class BookAndQuillCraftingHandler implements ICraftingHandler {
         }
     }
 
-    private boolean isCopyBook(ItemStack stack) {
+    private static boolean isCopyBook(ItemStack stack) {
         return isWrittenBook(stack) && stack.getItemData().getBoolean("copy");
     }
 
-    private boolean isWrittenBook(ItemStack stack) {
+    private static boolean isWrittenBook(ItemStack stack) {
         return stack != null && stack.getItem() instanceof ItemWrittenBook;
+    }
+
+    public static void init() {
+        MinecraftForge.registerCraftingHandler(new BookAndQuillCraftingHandler());
     }
 }
