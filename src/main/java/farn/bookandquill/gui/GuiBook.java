@@ -50,7 +50,10 @@ public abstract class GuiBook extends GuiScreen {
     }
 
     public static GuiBook get(EntityPlayer player, ItemStack book, boolean writable) {
-         return new GuiBookDouble(player, book, writable);
+        if(BookAndQuill.isClassicScreen())
+            return new GuiBookClassic(player, book, writable);
+        else
+            return new GuiBookDouble(player, book, writable);
     }
 
     public abstract boolean singlePage();
@@ -247,7 +250,7 @@ public abstract class GuiBook extends GuiScreen {
 
     @Override
     public boolean doesGuiPauseGame() {
-        return false;
+        return BookAndQuill.pauseGame();
     }
 
     @Override

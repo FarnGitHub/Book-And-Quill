@@ -1,9 +1,10 @@
 package farn.bookandquill;
 
-import farn.bookandquill.forge.BookAndQuillCraftingHandler;
-import farn.bookandquill.forge.ClonedBookRecipe;
+import farn.bookandquill.mod.forge.BookAndQuillCraftingHandler;
+import farn.bookandquill.mod.forge.ClonedBookRecipe;
 import farn.bookandquill.item.ItemWritableBook;
 import farn.bookandquill.item.ItemWrittenBook;
+import farn.bookandquill.mod.guiapi.Config;
 import net.minecraft.src.*;
 
 import java.io.ByteArrayInputStream;
@@ -21,6 +22,7 @@ public class BookAndQuill {
     public static final String NAME = "Book And Quill";
     public static final String DESCRIPTION = "Add Book And Quill to b1.7.3";
     public static final String ICON_PATH = "/assets/bookandquill/icon.png";
+    public static boolean hasGuiApi = false;
 
     private BookAndQuill() {
         throw new AssertionError();
@@ -38,6 +40,7 @@ public class BookAndQuill {
         //Written Book Item
         writtenBook = new ItemWrittenBook(mod_BookAndQuill.writtenBookID).setItemName("farn.code.bookandquill.writtenbook");
         ModLoader.AddLocalization(writtenBook.getItemName() + ".name", "Written Book");
+        ModLoader.AddLocalization(writtenBook.getItemName() + ".name.copy", "Written Book (Copy)");
         writtenBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/assets/bookandquill/textures/item/writtenBook.png"));
 
         //Book And Quill Recipe
@@ -48,6 +51,11 @@ public class BookAndQuill {
             //noinspection unchecked
             CraftingManager.getInstance().getRecipeList().add(new ClonedBookRecipe());
             BookAndQuillCraftingHandler.init();
+        }
+
+        hasGuiApi = hasClass("GuiApiHelper");
+        if(hasGuiApi) {
+            Config.INSTANCE.initScreen();
         }
     }
 
@@ -77,6 +85,14 @@ public class BookAndQuill {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static boolean isClassicScreen() {
+        return hasGuiApi && Config.INSTANCE.classicScreen.get("");
+    }
+
+    public static boolean pauseGame() {
+        return hasGuiApi && Config.INSTANCE.pauseGame.get("");
     }
 
 }

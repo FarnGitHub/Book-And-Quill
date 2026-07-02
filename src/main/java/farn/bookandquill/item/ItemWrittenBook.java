@@ -17,9 +17,11 @@ public class ItemWrittenBook extends ItemBookAbstract {
 	 	String finalName = super.getItemNameIS(stack);
 		if(stack.getItemData() != null) {
 			String title = stack.getItemData().getString("title");
-			if (!title.isEmpty()) finalName = title;
-			if(stack.getItemData().getBoolean("copy"))
-				finalName = finalName + " (Copy)";
+			boolean copy = stack.getItemData().getBoolean("copy");
+			if (!title.isEmpty()) {
+				finalName = title + (copy ? " (Copy)" : "");
+			} else if(copy)
+				finalName = finalName + ".copy";
 		}
 		return finalName;
 	}

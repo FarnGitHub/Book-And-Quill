@@ -1,4 +1,4 @@
-package farn.bookandquill.forge;
+package farn.bookandquill.mod.forge;
 
 import farn.bookandquill.BookAndQuill;
 import farn.bookandquill.item.ItemWritableBook;

@@ -46,22 +46,15 @@ unimined {
                     def path = "$base/$name"
                     c(name, path, path)
                 }
-
-                c('mod_BookAndQuill', 'net/minecraft/src/mod_BookAndQuill', 'net/minecraft/src/mod_BookAndQuill')
-
                 // Modloader
-                ['BaseMod', 'EntityRendererProxy', 'MLProp', 'ModLoader', 'ModTextureAnimation', 'ModTextureStatic'].each(mapClass)
+                ['mod_BookAndQuill', 'BaseMod', 'EntityRendererProxy', 'MLProp', 'ModLoader', 'ModTextureAnimation', 'ModTextureStatic'].each(mapClass)
+
+                ['GuiApiHelper', 'ModSettingScreen', 'Setting', 'SettingBoolean', 'Widget', 'WidgetBoolean'].each(mapClass)
 
             }
         }
 
         jarMod {
-        }
-
-        runs {
-            config('client') {
-                jvmArgs '-Djma.debug=true'
-            }
         }
     }
 }
@@ -70,7 +63,6 @@ dependencies {
     jarMod 'risugami:modloader:b1.7.3'
     jarMod 'modloadermp:modloadermp:b1.7.3:client'
     jarMod 'net.minecraftforge:forge:b1.7.3-1.0.7:client'
-
-    // Any mods in the jarmods folder are automatically added as dependencies
-    jarMod fileTree(dir: 'jarmods', include: ['*.jar', '*.zip'])
+    jarMod files('jarmods/b1.7.3_ItemNBT_1.3.zip')
+    jarMod files('jarmods/GuiAPI0.11.0-1.7.zip')
 }
