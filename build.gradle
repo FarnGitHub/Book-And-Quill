@@ -1,6 +1,6 @@
 plugins {
     id 'maven-publish'
-    id 'fabric-loom' version '1.16.2'
+    id 'fabric-loom' version '1.17.20'
     id 'babric-loom-extension' version '1.16.1'
 }
 
@@ -162,10 +162,6 @@ tasks.withType(GenerateModuleMetadata).configureEach {
 // Gradle 9 fails the build if there are no tests, but we are using the test package for a test mod
 tasks.withType(Test).configureEach {
     failOnNoDiscoveredTests = false
-}
-
-java {
-    withSourcesJar()
 }
 
 jar {

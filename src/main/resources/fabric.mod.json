@@ -3,7 +3,7 @@
   "id": "bookandquill",
   "version": "${version}",
   "name": "Book And Quill",
-  "description": "Add Book And Quill to b1.7.3. identical to how it work in r1.3.1-r1.6.4",
+  "description": "Add Book And Quill to b1.7.3.",
   "authors": [
     "farnfarn02"
   ],
