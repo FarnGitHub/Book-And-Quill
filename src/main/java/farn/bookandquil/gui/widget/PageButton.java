@@ -1,4 +1,4 @@
-package farn.bookandquil.gui;
+package farn.bookandquil.gui.widget;
 
 import farn.bookandquil.gui.screen.BookScreen;
 import net.minecraft.client.Minecraft;

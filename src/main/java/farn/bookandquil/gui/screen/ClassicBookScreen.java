@@ -66,7 +66,22 @@ public class ClassicBookScreen extends BookScreen {
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);
         this.textRenderer.draw(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, 18, 0);
-        this.textRenderer.drawSplit(content, this.bookTitleCenterX + 36, 34, 116, 0);
+        this.drawPageContent(content, getContentX(PageFocus.FIRST), PageFocus.FIRST);
+    }
+
+    @Override
+    public int getContentX(PageFocus focus) {
+        return this.bookTitleCenterX + 36;
+    }
+
+    @Override
+    public int getContentY(PageFocus focus) {
+        return 34;
+    }
+
+    @Override
+    public int getContentWidth(PageFocus focus) {
+        return 116;
     }
 
     public void drawBook() {

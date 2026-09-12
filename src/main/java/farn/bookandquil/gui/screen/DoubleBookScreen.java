@@ -74,9 +74,26 @@ public class DoubleBookScreen extends BookScreen {
 
         int indicatorWidth = this.textRenderer.getWidth(pageIndicator2);
         this.textRenderer.draw(pageIndicator1, this.bookDoubleCenterX + 44, 18, 0);
-        this.textRenderer.drawSplit(content1, this.bookDoubleCenterX + 42, 34, 116, 0);
+        this.drawPageContent(content1, getContentX(PageFocus.FIRST), PageFocus.FIRST);
         this.textRenderer.draw(pageIndicator2, this.bookDoubleCenterX - indicatorWidth + this.bookImageWidth - 44, 18, 0);
-        this.textRenderer.drawSplit(content2, this.bookDoubleCenterX + this.bookImageWidth - 156, 34, 116, 0);
+        this.drawPageContent(content2, getContentX(PageFocus.SECOND), PageFocus.SECOND);
+    }
+
+    @Override
+    public int getContentX(PageFocus focus) {
+        return focus == PageFocus.FIRST ?
+                this.bookDoubleCenterX + 42 :
+                this.bookDoubleCenterX + this.bookImageWidth - 156;
+    }
+
+    @Override
+    public int getContentY(PageFocus focus) {
+        return 34;
+    }
+
+    @Override
+    public int getContentWidth(PageFocus focus) {
+        return 116;
     }
 
     public void drawBookCover() {

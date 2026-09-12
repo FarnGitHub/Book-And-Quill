@@ -1,11 +1,13 @@
 package farn.bookandquil.gui.screen;
 
 import farn.bookandquil.BookAndQuill;
-import farn.bookandquil.gui.PageButton;
+import farn.bookandquil.gui.widget.PageButton;
 import farn.bookandquil.packet.BookContentC2SPacket;
 import farn.bookandquil.packet.SigningBookC2SPacket;
 import farn.bookandquil.util.MainUtil;
 import farn.bookandquil.util.PageFocus;
+import farn.bookandquil.util.TextUtils;
+import farn.bookandquil.util.TextLine;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.TranslationStorage;
@@ -17,7 +19,12 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.util.CharacterUtils;
 import net.modificationstation.stationapi.api.network.packet.PacketHelper;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.util.List;
 
 public abstract class BookScreen extends Screen {
     protected final PlayerEntity player;
@@ -44,6 +51,12 @@ public abstract class BookScreen extends Screen {
     protected int bookDoubleCenterX = 0;
     protected String underscore = "§0_";
 
+    protected int selectionStartX = -1;
+    protected int selectionStartY = -1;
+    protected int selectionEndX = -1;
+    protected int selectionEndY = -1;
+    protected boolean selecting = false;
+
     protected BookScreen(PlayerEntity player, ItemStack book, boolean writable) {
         this.player = player;
         this.book = book;
@@ -69,12 +82,13 @@ public abstract class BookScreen extends Screen {
     }
 
     public abstract boolean singlePage();
-
     protected abstract void renderBookCover();
-
     protected abstract void renderSigning();
-
     protected abstract void renderBook();
+    public abstract int getContentX(PageFocus focus);
+    public abstract int getContentY(PageFocus focus);
+    public abstract int getContentWidth(PageFocus focus);
+
 
     public NbtCompound getBookData() {
         return this.book.getStationNbt();
@@ -134,15 +148,38 @@ public abstract class BookScreen extends Screen {
     }
 
     protected void typeInBook(PageFocus pager, char character, int keycode) {
-        if(character == '\u0016') this.addToContent(Screen.getClipboard());
-        else {
+        if (hasSelection()) {
+            String content = this.getContent(pager);
+            if (character == '\u0003') {
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
+            } else if (character == '\u0016') {
+                this.setContent(pager, replaceSelection(content, Screen.getClipboard()));
+            } else {
+                switch (keycode) {
+                    case 14: {
+                        this.setContent(pager, replaceSelection(content, ""));
+                        break;
+                    }
+                    case 28: {
+                        this.setContent(pager, replaceSelection(content, " "));
+                        break;
+                    }
+                    default: {
+                        if (CharacterUtils.VALID_CHARACTERS.indexOf(character) >= 0) {
+                            this.setContent(pager, replaceSelection(content, String.valueOf(character)));
+                        }
+                    }
+                }
+            }
+        } else if (character == '\u0016') {
+            this.addToContent(Screen.getClipboard());
+        } else {
+            String content = this.getContent(pager);
             switch(keycode) {
                 case 14:
-                    String content = this.getContent(pager);
                     if(!content.isEmpty()) {
                         this.setContent(pager, content.substring(0, content.length() - 1));
                     }
-
                     return;
                 case 28:
                     this.addToContent("\n");
@@ -153,7 +190,24 @@ public abstract class BookScreen extends Screen {
                     }
             }
         }
+    }
 
+    public String replaceSelection(String content, String replacement) {
+        int start = Math.min(getSelectionStart(), getSelectionEnd());
+        int end = Math.max(getSelectionStart(), getSelectionEnd());
+
+        start = Math.max(0, Math.min(start, content.length()));
+        end = Math.max(0, Math.min(end, content.length()));
+
+        if (start > end) {
+            int temp = start;
+            start = end;
+            end = temp;
+        }
+
+        return content.substring(0, start)
+                + replacement
+                + content.substring(end);
     }
 
     protected void typeInSigning(char character, int keyCode) {
@@ -197,6 +251,7 @@ public abstract class BookScreen extends Screen {
         if(this.pages != null && currentPage >= 0 && currentPage < this.pages.size()) {
             ((NbtString)this.pages.get(currentPage)).value = content;
             this.modified = true;
+            this.unSelectText();
         }
     }
 
@@ -218,6 +273,120 @@ public abstract class BookScreen extends Screen {
                  (totalPages & 1) == 1 && !singlePage() ?
                  this.totalPages + 1 : totalPages
          );
+    }
+
+    protected boolean hasSelection() {
+        return this.selectionStartX >= 0
+                && this.selectionStartY >= 0
+                && this.selectionEndX >= 0
+                && this.selectionEndY >= 0
+                && (this.selectionStartX != this.selectionEndX
+                || this.selectionStartY != this.selectionEndY);
+    }
+
+
+    protected int getSelectionStart() {
+        return getCharacterIndexAt(this.selectionStartX, this.selectionStartY);
+    }
+
+    protected int getSelectionEnd() {
+        return getCharacterIndexAt(this.selectionEndX, this.selectionEndY);
+    }
+
+    protected int getSelectionMin() {
+        return Math.min(getSelectionStart(), getSelectionEnd());
+    }
+
+    protected int getSelectionMax() {
+        return Math.max(getSelectionStart(), getSelectionEnd());
+    }
+
+    protected String getSelectedText() {
+        if (!hasSelection())
+            return "";
+
+        String content = getContent(this.pageFocus);
+
+        int start = getSelectionMin();
+        int end = Math.min(getSelectionMax(), content.length());
+
+        if (start >= end)
+            return "";
+
+        return content.substring(start, end);
+    }
+
+    protected void unSelectText() {
+        this.selecting = false;
+        this.selectionStartX = -1;
+        this.selectionStartY = -1;
+        this.selectionEndX = -1;
+        this.selectionEndY = -1;
+    }
+
+    protected void updateSelection(int mouseX, int mouseY) {
+        if (this.pageFocus == PageFocus.UNFOCUS)
+            return;
+
+        this.selectionEndX = mouseX;
+        this.selectionEndY = mouseY;
+    }
+
+    protected int getCharacterIndexAt(int mouseX, int mouseY) {
+        String content = getContent(this.pageFocus);
+
+        List<TextLine> lines = TextUtils.getTextLines(content, getContentWidth(this.pageFocus));
+
+        if (lines.isEmpty())
+            return 0;
+
+        int lineIndex = (mouseY - getContentY(this.pageFocus)) / 8;
+
+        if (lineIndex < 0)
+            return 0;
+
+        if (lineIndex >= lines.size())
+            return content.length();
+
+        TextLine line = lines.get(lineIndex);
+
+        int relativeX = mouseX - getContentX(this.pageFocus);
+
+        if (relativeX <= 0)
+            return line.start();
+
+        for (int i = 0; i < line.text().length(); i++) {
+            int previousWidth = i == 0 ? 0 : this.textRenderer.getWidth(line.text().substring(0, i));
+
+            int characterWidth = this.textRenderer.getWidth(line.text().substring(0, i + 1));
+
+            if (relativeX < (previousWidth + characterWidth) / 2) {
+                return line.start() + i;
+            }
+        }
+
+        return line.end();
+    }
+
+    protected void drawPageContent(String content, int x, PageFocus focus) {
+        List<TextLine> lines = TextUtils.getTextLines(content, getContentWidth(focus));
+        for (int i = 0; i < lines.size(); i++) {
+            TextLine line = lines.get(i);
+            int lineY = getContentY(focus) + i * 8;
+            if(this.pageFocus == focus && hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
+                int selectedStart = Math.max(getSelectionMin(), line.start());
+                int selectedEnd = Math.min(getSelectionMax(), line.end());
+                int startOffset = Math.max(0, Math.min(selectedStart - line.start(), line.text().length()));
+                int endOffset = Math.max(0, Math.min(selectedEnd - line.start(), line.text().length()));
+                String before = line.text().substring(0, startOffset);
+                String selected = line.text().substring(startOffset, endOffset);
+                int highlightX = getContentX(focus) + this.textRenderer.getWidth(before);
+                int highlightWidth = this.textRenderer.getWidth(selected);
+
+                this.fill(highlightX,lineY,highlightX + highlightWidth,lineY + 8,0x800000FF);
+            }
+            this.textRenderer.draw(line.text(),x,lineY,0);
+        }
     }
 
     @Override
@@ -275,6 +444,8 @@ public abstract class BookScreen extends Screen {
                 this.typeInSigning(character, keyCode);
             else if(pageFocus != PageFocus.UNFOCUS)
                 this.typeInBook(pageFocus, character, keyCode);
+        } else if(hasSelection() && character == '\u0003') {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
         }
     }
 
@@ -286,6 +457,8 @@ public abstract class BookScreen extends Screen {
                 this.updateBookData(false);
             } else if(button.id == 3 && this.writable) {
                 this.signing = true;
+                this.pageFocus = PageFocus.UNFOCUS;
+                this.unSelectText();
             } else if(button.id == 1) {
                 int currentPage = this.currentPage + (singlePage() ? 0 : 1);
                 if (currentPage < this.totalPages - 1) {
@@ -317,26 +490,69 @@ public abstract class BookScreen extends Screen {
 
     @Override
     protected void mouseClicked(int x, int y, int b) {
-        if(singlePage()) {
-            this.pageFocus = PageFocus.FIRST;
-        } else if(this.writable) {
-            int fX = (this.width - this.bookImageWidth) / 2;
-            int sX = fX + (this.bookImageWidth / 2);
-            int yMin = 0;
-            int pageWidth = this.bookImageWidth / 2;
-            int yMax = this.imageHeight;
-            if(x >= fX && x < fX + pageWidth && y >= yMin && y < yMax) {
+        PageFocus prevFocus = pageFocus;
+        if(!this.signing) {
+            if(this.singlePage()) {
                 this.pageFocus = PageFocus.FIRST;
-            } else if(x >= sX && x < sX + pageWidth && y >= yMin && y < yMax) {
-                this.pageFocus = PageFocus.SECOND;
             } else {
-                this.pageFocus = PageFocus.UNFOCUS;
+                int fX = (this.width - this.bookImageWidth) / 2;
+                int sX = fX + (this.bookImageWidth / 2);
+                int yMin = 0;
+                int pageWidth = this.bookImageWidth / 2;
+                int yMax = this.imageHeight;
+                if(x >= fX && x < fX + pageWidth && y >= yMin && y < yMax) {
+                    this.pageFocus = PageFocus.FIRST;
+                } else if(x >= sX && x < sX + pageWidth && y >= yMin && y < yMax) {
+                    this.pageFocus = PageFocus.SECOND;
+                } else {
+                    this.pageFocus = PageFocus.UNFOCUS;
+                }
             }
         } else {
             this.pageFocus = PageFocus.UNFOCUS;
         }
 
+        if(prevFocus != this.pageFocus) {
+            this.unSelectText();
+        }
+
+        if (b == 0 && this.pageFocus != PageFocus.UNFOCUS) {
+            this.selectionStartX = x;
+            this.selectionStartY = y;
+            this.selectionEndX = x;
+            this.selectionEndY = y;
+            this.selecting = true;
+        }
+
         super.mouseClicked(x, y, b);
+    }
+
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int button) {
+        if (button == 0) {
+            selecting = false;
+        }
+
+        super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public void onMouseEvent() {
+        super.onMouseEvent();
+
+        if (!this.selecting)
+            return;
+
+        if (!Mouse.isButtonDown(0))
+            return;
+
+        if (Mouse.getEventDX() == 0 && Mouse.getEventDY() == 0)
+            return;
+
+        int mouseX = Mouse.getEventX() * this.width / this.minecraft.displayWidth;
+        int mouseY = this.height - Mouse.getEventY() * this.height / this.minecraft.displayHeight - 1;
+
+        this.updateSelection(mouseX, mouseY);
     }
 
     @Override
