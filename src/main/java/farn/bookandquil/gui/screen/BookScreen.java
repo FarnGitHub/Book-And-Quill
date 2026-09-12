@@ -25,6 +25,7 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class BookScreen extends Screen {
     protected final PlayerEntity player;
@@ -58,6 +59,8 @@ public abstract class BookScreen extends Screen {
     protected boolean selecting = false;
 
     public int cursorPos = 0;
+
+    String saveText;
 
     protected BookScreen(PlayerEntity player, ItemStack book, boolean writable) {
         this.player = player;
@@ -376,7 +379,7 @@ public abstract class BookScreen extends Screen {
 
                 int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
                 int cursorPrev = cursor - 1;
-                if(cursorPrev == line.start() && cursorPrev == line.end()) {
+                if(cursorPrev == line.end()) {
                     cursorX = getContentX(focus);
                     cursorY = lineY + 8;
                 } else if(cursor >= line.start() && cursor <= line.end()) {
