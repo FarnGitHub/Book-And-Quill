@@ -150,16 +150,16 @@ public abstract class BookScreen extends Screen {
 
     protected void typeInBook(char character, int keycode) {
         if (hasSelection() && character == '\u0003') {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
+            this.copyFromSelected();
         } else if (character == '\u0016') {
             this.addToContent(Screen.getClipboard(), false);
         } else {
             switch(keycode) {
-                case 14:
+                case Keyboard.KEY_BACK:
                     this.removeToContent();
                     return;
-                case 28:
-                    this.addToContent(" ", hasSelection());
+                case Keyboard.KEY_RETURN:
+                    this.addToContent("\n", hasSelection());
                     return;
                 default:
                     if(CharacterUtils.VALID_CHARACTERS.indexOf(character) >= 0) {
@@ -216,30 +216,27 @@ public abstract class BookScreen extends Screen {
 
     private void addToContent(String text, boolean selection) {
         String prevContent = this.getContent(pageFocus);
-        if(selection) {
+        if(selection)
             deleteSelection(pageFocus);
-        }
         this.cursorPos = MainUtil.clamp(this.cursorPos, 0, prevContent.length());
         String newContent = prevContent.substring(0, cursorPos) + text + prevContent.substring(cursorPos);
         this.cursorPos += text.length();
         int contentHeight = this.textRenderer.splitAndGetHeight(newContent, 118);
-        if(contentHeight <= 118 && newContent.length() < 256) {
+        if(contentHeight <= 118 && newContent.length() < 256)
             this.setContent(pageFocus, newContent);
-        }
     }
 
     private void removeToContent() {
-        if(hasSelection()) {
+        if(hasSelection())
             deleteSelection(this.pageFocus);
-        } if(this.cursorPos > 0) {
+        else if(this.cursorPos > 0) {
             String prevContent = this.getContent(pageFocus);
             this.cursorPos = MainUtil.clamp(this.cursorPos, 0, prevContent.length());
             String newContent = prevContent.substring(0, cursorPos - 1) + prevContent.substring(cursorPos);
             this.cursorPos -= 1;
             int contentHeight = this.textRenderer.splitAndGetHeight(newContent, 118);
-            if(contentHeight <= 118 && newContent.length() < 256) {
+            if(contentHeight <= 118 && newContent.length() < 256)
                 this.setContent(pageFocus, newContent);
-            }
         }
     }
 
@@ -389,7 +386,11 @@ public abstract class BookScreen extends Screen {
         }
 
         if(this.writable && this.pageFocus == focus)
-            this.drawVerticalLine(cursorX - 1, cursorY + 8, cursorY - 1,this.tick / 6 % 2 == 0 ? 0xFF808080 : 0);
+            this.fill(cursorX - 1, cursorY + 8, cursorX, cursorY, this.tick / 6 % 2 == 0 ? 0xFF808080 : 0);
+    }
+
+    private void copyFromSelected() {
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
     }
 
     @Override
@@ -429,10 +430,9 @@ public abstract class BookScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if(++this.tick / 6 % 2 == 0)
-            this.underscore = "§0_";
-        else
-            this.underscore = "§7_";
+        this.underscore =
+                ++this.tick / 6 % 2 == 0 ?
+                        "§0_" : "§7_";
     }
 
     @Override
@@ -448,9 +448,8 @@ public abstract class BookScreen extends Screen {
                 this.typeInSigning(character, keyCode);
             else if(pageFocus != PageFocus.UNFOCUS)
                 this.typeInBook(character, keyCode);
-        } else if(hasSelection() && character == '\u0003') {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
-        }
+        } else if(hasSelection() && character == '\u0003')
+            copyFromSelected();
     }
 
     @Override
