@@ -60,9 +60,6 @@ public class ClassicBookScreen extends BookScreen {
         this.drawBook();
         String pageIndicator = String.format(MainUtil.translate("book.pageIndicator"), this.currentPage + 1, this.totalPages);
         String content = getContent(PageFocus.FIRST);
-        if(this.writable) {
-            content += this.underscore;
-        }
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);
         this.textRenderer.draw(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, 18, 0);

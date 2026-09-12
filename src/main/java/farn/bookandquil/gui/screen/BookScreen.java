@@ -57,6 +57,8 @@ public abstract class BookScreen extends Screen {
     protected int selectionEndY = -1;
     protected boolean selecting = false;
 
+    public int cursorPos = 0;
+
     protected BookScreen(PlayerEntity player, ItemStack book, boolean writable) {
         this.player = player;
         this.book = book;
@@ -88,7 +90,6 @@ public abstract class BookScreen extends Screen {
     public abstract int getContentX(PageFocus focus);
     public abstract int getContentY(PageFocus focus);
     public abstract int getContentWidth(PageFocus focus);
-
 
     public NbtCompound getBookData() {
         return this.book.getStationNbt();
@@ -147,67 +148,25 @@ public abstract class BookScreen extends Screen {
         }
     }
 
-    protected void typeInBook(PageFocus pager, char character, int keycode) {
-        if (hasSelection()) {
-            String content = this.getContent(pager);
-            if (character == '\u0003') {
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
-            } else if (character == '\u0016') {
-                this.setContent(pager, replaceSelection(content, Screen.getClipboard()));
-            } else {
-                switch (keycode) {
-                    case 14: {
-                        this.setContent(pager, replaceSelection(content, ""));
-                        break;
-                    }
-                    case 28: {
-                        this.setContent(pager, replaceSelection(content, " "));
-                        break;
-                    }
-                    default: {
-                        if (CharacterUtils.VALID_CHARACTERS.indexOf(character) >= 0) {
-                            this.setContent(pager, replaceSelection(content, String.valueOf(character)));
-                        }
-                    }
-                }
-            }
+    protected void typeInBook(char character, int keycode) {
+        if (hasSelection() && character == '\u0003') {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
         } else if (character == '\u0016') {
-            this.addToContent(Screen.getClipboard());
+            this.addToContent(Screen.getClipboard(), false);
         } else {
-            String content = this.getContent(pager);
             switch(keycode) {
                 case 14:
-                    if(!content.isEmpty()) {
-                        this.setContent(pager, content.substring(0, content.length() - 1));
-                    }
+                    this.removeToContent();
                     return;
                 case 28:
-                    this.addToContent("\n");
+                    this.addToContent(" ", hasSelection());
                     return;
                 default:
                     if(CharacterUtils.VALID_CHARACTERS.indexOf(character) >= 0) {
-                        this.addToContent(Character.toString(character));
+                        this.addToContent(Character.toString(character), hasSelection());
                     }
             }
         }
-    }
-
-    public String replaceSelection(String content, String replacement) {
-        int start = Math.min(getSelectionStart(), getSelectionEnd());
-        int end = Math.max(getSelectionStart(), getSelectionEnd());
-
-        start = Math.max(0, Math.min(start, content.length()));
-        end = Math.max(0, Math.min(end, content.length()));
-
-        if (start > end) {
-            int temp = start;
-            start = end;
-            end = temp;
-        }
-
-        return content.substring(0, start)
-                + replacement
-                + content.substring(end);
     }
 
     protected void typeInSigning(char character, int keyCode) {
@@ -255,13 +214,44 @@ public abstract class BookScreen extends Screen {
         }
     }
 
-    private void addToContent(String text) {
-        String newContent = this.getContent(pageFocus) + text;
-        int contentHeight = this.textRenderer.splitAndGetHeight(newContent + "§0" + "_", 118);
+    private void addToContent(String text, boolean selection) {
+        String prevContent = this.getContent(pageFocus);
+        if(selection) {
+            deleteSelection(pageFocus);
+        }
+        this.cursorPos = MainUtil.clamp(this.cursorPos, 0, prevContent.length());
+        String newContent = prevContent.substring(0, cursorPos) + text + prevContent.substring(cursorPos);
+        this.cursorPos += text.length();
+        int contentHeight = this.textRenderer.splitAndGetHeight(newContent, 118);
         if(contentHeight <= 118 && newContent.length() < 256) {
             this.setContent(pageFocus, newContent);
         }
     }
+
+    private void removeToContent() {
+        if(hasSelection()) {
+            deleteSelection(this.pageFocus);
+        } if(this.cursorPos > 0) {
+            String prevContent = this.getContent(pageFocus);
+            this.cursorPos = MainUtil.clamp(this.cursorPos, 0, prevContent.length());
+            String newContent = prevContent.substring(0, cursorPos - 1) + prevContent.substring(cursorPos);
+            this.cursorPos -= 1;
+            int contentHeight = this.textRenderer.splitAndGetHeight(newContent, 118);
+            if(contentHeight <= 118 && newContent.length() < 256) {
+                this.setContent(pageFocus, newContent);
+            }
+        }
+    }
+
+    private void deleteSelection(PageFocus focus) {
+        String message = this.getContent(focus);
+        int lo = getSelectionMin();
+        int hi = getSelectionMax();
+        this.setContent(focus, message.substring(0, lo) + message.substring(hi));
+        this.cursorPos = lo;
+        unSelected();
+    }
+
 
     public int increment(int integer) {
         return (integer & 1) == 1 || singlePage() ? 1 : 2;
@@ -327,6 +317,7 @@ public abstract class BookScreen extends Screen {
     protected void updateSelection(int mouseX, int mouseY) {
         this.selectionEndX = mouseX;
         this.selectionEndY = mouseY;
+        this.cursorPos = getCharacterIndexAt(mouseX, mouseY);
     }
 
     protected int getCharacterIndexAt(int mouseX, int mouseY) {
@@ -366,24 +357,39 @@ public abstract class BookScreen extends Screen {
     }
 
     protected void drawPageContent(String content, int x, PageFocus focus) {
+        int cursorX = getContentX(focus);
+        int cursorY = getContentY(focus);
         List<TextLine> lines = TextUtils.getTextLines(content, getContentWidth(focus));
         for (int i = 0; i < lines.size(); i++) {
             TextLine line = lines.get(i);
             int lineY = getContentY(focus) + i * 8;
-            if(this.pageFocus == focus && hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
-                int selectedStart = Math.max(getSelectionMin(), line.start());
-                int selectedEnd = Math.min(getSelectionMax(), line.end());
-                int startOffset = Math.max(0, Math.min(selectedStart - line.start(), line.text().length()));
-                int endOffset = Math.max(0, Math.min(selectedEnd - line.start(), line.text().length()));
-                String before = line.text().substring(0, startOffset);
-                String selected = line.text().substring(startOffset, endOffset);
-                int highlightX = getContentX(focus) + this.textRenderer.getWidth(before);
-                int highlightWidth = this.textRenderer.getWidth(selected);
+            if(this.pageFocus == focus) {
+                if(hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
+                    int selectedStart = Math.max(getSelectionMin(), line.start());
+                    int selectedEnd = Math.min(getSelectionMax(), line.end());
+                    int startOffset = Math.max(0, Math.min(selectedStart - line.start(), line.text().length()));
+                    int endOffset = Math.max(0, Math.min(selectedEnd - line.start(), line.text().length()));
+                    String before = line.text().substring(0, startOffset);
+                    String selected = line.text().substring(startOffset, endOffset);
+                    int highlightX = getContentX(focus) + this.textRenderer.getWidth(before);
+                    int highlightWidth = this.textRenderer.getWidth(selected);
 
-                this.fill(highlightX,lineY,highlightX + highlightWidth,lineY + 8,0x800000FF);
+                    this.fill(highlightX,lineY,highlightX + highlightWidth,lineY + 8,0x800000FF);
+                }
+
+                int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
+                if (cursor >= line.start() && cursor <= line.end()) {
+                    int offset = cursor - line.start();
+                    String beforeC = line.text().substring(0, offset);
+                    cursorX = getContentX(focus) + this.textRenderer.getWidth(beforeC);
+                    cursorY = lineY;
+                }
             }
             this.textRenderer.draw(line.text(),x,lineY,0);
         }
+
+        if(this.writable && this.pageFocus == focus)
+            this.drawVerticalLine(cursorX - 1, cursorY + 8, cursorY - 1,this.tick / 6 % 2 == 0 ? 0xFF808080 : 0);
     }
 
     @Override
@@ -391,6 +397,7 @@ public abstract class BookScreen extends Screen {
     public void init() {
         this.buttons.clear();
         Keyboard.enableRepeatEvents(true);
+        this.cursorPos = getContent(pageFocus).length();
         if(this.writable) {
             this.buttons.add(this.signButton = new ButtonWidget(3, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.signButton")));
             this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.done")));
@@ -440,7 +447,7 @@ public abstract class BookScreen extends Screen {
             if(this.signing)
                 this.typeInSigning(character, keyCode);
             else if(pageFocus != PageFocus.UNFOCUS)
-                this.typeInBook(pageFocus, character, keyCode);
+                this.typeInBook(character, keyCode);
         } else if(hasSelection() && character == '\u0003') {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
         }
@@ -519,6 +526,7 @@ public abstract class BookScreen extends Screen {
             this.selectionEndX = x;
             this.selectionEndY = y;
             this.selecting = true;
+            this.cursorPos = getCharacterIndexAt(x, y);
         }
 
         super.mouseClicked(x, y, b);

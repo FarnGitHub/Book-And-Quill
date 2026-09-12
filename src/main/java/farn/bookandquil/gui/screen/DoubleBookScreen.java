@@ -65,13 +65,6 @@ public class DoubleBookScreen extends BookScreen {
         String content1 = this.getContent(PageFocus.FIRST);
         String content2 = this.getContent(PageFocus.SECOND);
 
-        if(this.writable) {
-            if(pageFocus == PageFocus.FIRST)
-                content1 = content1 + this.underscore;
-            else if(pageFocus == PageFocus.SECOND)
-                content2 = content2 + this.underscore;
-        }
-
         int indicatorWidth = this.textRenderer.getWidth(pageIndicator2);
         this.textRenderer.draw(pageIndicator1, this.bookDoubleCenterX + 44, 18, 0);
         this.drawPageContent(content1, getContentX(PageFocus.FIRST), PageFocus.FIRST);

@@ -49,4 +49,8 @@ public class MainUtil {
     public static boolean classicBook() {
         return hasGcapi && ConfigListener.get.classicBook;
     }
+
+    public static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
 }
