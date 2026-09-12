@@ -325,9 +325,6 @@ public abstract class BookScreen extends Screen {
     }
 
     protected void updateSelection(int mouseX, int mouseY) {
-        if (this.pageFocus == PageFocus.UNFOCUS)
-            return;
-
         this.selectionEndX = mouseX;
         this.selectionEndY = mouseY;
     }
@@ -540,7 +537,7 @@ public abstract class BookScreen extends Screen {
     public void onMouseEvent() {
         super.onMouseEvent();
 
-        if (!this.selecting)
+        if (this.pageFocus == PageFocus.UNFOCUS || !this.selecting)
             return;
 
         if (!Mouse.isButtonDown(0))
