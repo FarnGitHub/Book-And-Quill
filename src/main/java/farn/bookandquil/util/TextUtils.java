@@ -19,13 +19,7 @@ public class TextUtils {
                 newline = text.length();
             }
 
-            addWrappedLines(
-                    text,
-                    paragraphStart,
-                    newline,
-                    width,
-                    lines
-            );
+            addWrappedLines(text, paragraphStart, newline, width, lines);
 
             if (newline == text.length()) {
                 break;
@@ -61,9 +55,7 @@ public class TextUtils {
             while (wordStart < end && original.charAt(wordStart) == ' ')
                 wordStart++;
 
-            int wordEnd = wordStart + word.length();
-
-            searchIndex = wordEnd;
+            searchIndex = wordStart + word.length();
 
             String line = word + " ";
             int lineStart = wordStart;
@@ -77,7 +69,7 @@ public class TextUtils {
 
                     int nextStart = searchIndex;
 
-                    while (nextStart < end && original.charAt(nextStart) == ' ')
+                    while(nextStart < end && original.charAt(nextStart) == ' ')
                         nextStart++;
 
                     searchIndex = nextStart + nextWord.length();
@@ -99,17 +91,8 @@ public class TextUtils {
                 String part = line.substring(0, chars);
 
                 if (!part.trim().isEmpty()) {
-                    int partStart = lineStart;
-                    int partEnd = Math.min(
-                            partStart + part.length(),
-                            end
-                    );
-
-                    lines.add(new TextLine(
-                            part,
-                            partStart,
-                            partEnd
-                    ));
+                    int partEnd = Math.min(lineStart + part.length(), end);
+                    lines.add(new TextLine(part, lineStart, partEnd));
                 }
 
                 line = line.substring(chars);
@@ -117,16 +100,8 @@ public class TextUtils {
             }
 
             if (!line.trim().isEmpty()) {
-                int lineEnd = Math.min(
-                        lineStart + line.length(),
-                        end
-                );
-
-                lines.add(new TextLine(
-                        line,
-                        lineStart,
-                        lineEnd
-                ));
+                int lineEnd = Math.min(lineStart + line.length(), end);
+                lines.add(new TextLine(line, lineStart, lineEnd));
             }
         }
     }

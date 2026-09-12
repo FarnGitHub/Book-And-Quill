@@ -1,13 +1,11 @@
 package farn.bookandquil.util;
 
 public enum PageFocus {
-    UNFOCUS(-1),
-    FIRST(0),
-    SECOND(1);
+    UNFOCUS,
+    FIRST,
+    SECOND;
 
-    public final int focusVal;
-
-    PageFocus(int val) {
-        focusVal = val;
+    public int increment() {
+        return this.ordinal() - 1;
     }
 }

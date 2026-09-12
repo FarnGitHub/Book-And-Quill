@@ -236,7 +236,7 @@ public abstract class BookScreen extends Screen {
     }
 
     protected String getContent(PageFocus focus) {
-        int currentPage = this.currentPage + focus.focusVal;
+        int currentPage = this.currentPage + focus.increment();
         if(this.pages != null && this.pages.size() >= 0 && currentPage < this.pages.size() && focus != PageFocus.UNFOCUS) {
             if(this.pages.get(currentPage) instanceof NbtString string) {
                 return string.value;
@@ -247,11 +247,11 @@ public abstract class BookScreen extends Screen {
     }
 
     private void setContent(PageFocus focus, String content) {
-        int currentPage = this.currentPage + focus.focusVal;
+        int currentPage = this.currentPage + focus.increment();
         if(this.pages != null && currentPage >= 0 && currentPage < this.pages.size()) {
             ((NbtString)this.pages.get(currentPage)).value = content;
             this.modified = true;
-            this.unSelectText();
+            this.unSelected();
         }
     }
 
@@ -316,7 +316,7 @@ public abstract class BookScreen extends Screen {
         return content.substring(start, end);
     }
 
-    protected void unSelectText() {
+    protected void unSelected() {
         this.selecting = false;
         this.selectionStartX = -1;
         this.selectionStartY = -1;
@@ -458,7 +458,7 @@ public abstract class BookScreen extends Screen {
             } else if(button.id == 3 && this.writable) {
                 this.signing = true;
                 this.pageFocus = PageFocus.UNFOCUS;
-                this.unSelectText();
+                this.unSelected();
             } else if(button.id == 1) {
                 int currentPage = this.currentPage + (singlePage() ? 0 : 1);
                 if (currentPage < this.totalPages - 1) {
@@ -513,7 +513,7 @@ public abstract class BookScreen extends Screen {
         }
 
         if(prevFocus != this.pageFocus) {
-            this.unSelectText();
+            this.unSelected();
         }
 
         if (b == 0 && this.pageFocus != PageFocus.UNFOCUS) {
