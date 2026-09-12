@@ -375,7 +375,7 @@ public abstract class BookScreen extends Screen {
                 }
 
                 int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
-                if(content.charAt(cursor - 1) == '\n') {
+                if(cursor > 0 && content.charAt(cursor - 1) == '\n') {
                     cursorX = getContentX(focus);
                     cursorY = lineY + 8;
                 } else if (cursor >= line.start() && cursor <= line.end()) {
