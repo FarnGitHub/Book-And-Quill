@@ -60,8 +60,6 @@ public abstract class BookScreen extends Screen {
 
     public int cursorPos = 0;
 
-    String saveText;
-
     protected BookScreen(PlayerEntity player, ItemStack book, boolean writable) {
         this.player = player;
         this.book = book;
@@ -199,10 +197,15 @@ public abstract class BookScreen extends Screen {
 
     protected String getContent(PageFocus focus) {
         int currentPage = this.currentPage + focus.increment();
-        if(this.pages != null && this.pages.size() >= 0 && currentPage < this.pages.size() && focus != PageFocus.UNFOCUS) {
-            if(this.pages.get(currentPage) instanceof NbtString string) {
-                return string.value;
-            }
+        if(
+           currentPage >= 0 &&
+           this.pages != null &&
+           this.pages.size() >= 0 &&
+           currentPage < this.pages.size() &&
+           focus != PageFocus.UNFOCUS &&
+           this.pages.get(currentPage) instanceof NbtString string
+        ) {
+            return string.value;
         }
 
         return "";
