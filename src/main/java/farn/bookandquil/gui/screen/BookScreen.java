@@ -221,7 +221,7 @@ public abstract class BookScreen extends Screen {
         this.cursorPos = MainUtil.clamp(this.cursorPos, 0, prevContent.length());
         String newContent = prevContent.substring(0, cursorPos) + text + prevContent.substring(cursorPos);
         this.cursorPos += text.length();
-        int contentHeight = this.textRenderer.splitAndGetHeight(newContent, 118);
+        int contentHeight = TextUtils.getTextLinesCount(newContent, 118);
         if(contentHeight <= 118 && newContent.length() < 256)
             this.setContent(pageFocus, newContent);
     }
@@ -234,7 +234,7 @@ public abstract class BookScreen extends Screen {
             this.cursorPos = MainUtil.clamp(this.cursorPos, 0, prevContent.length());
             String newContent = prevContent.substring(0, cursorPos - 1) + prevContent.substring(cursorPos);
             this.cursorPos -= 1;
-            int contentHeight = this.textRenderer.splitAndGetHeight(newContent, 118);
+            int contentHeight = TextUtils.getTextLinesCount(newContent, 118);
             if(contentHeight <= 118 && newContent.length() < 256)
                 this.setContent(pageFocus, newContent);
         }
@@ -361,7 +361,7 @@ public abstract class BookScreen extends Screen {
             TextLine line = lines.get(i);
             int lineY = getContentY(focus) + i * 8;
             if(this.pageFocus == focus) {
-                if(hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
+                if (hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
                     int selectedStart = Math.max(getSelectionMin(), line.start());
                     int selectedEnd = Math.min(getSelectionMax(), line.end());
                     int startOffset = Math.max(0, Math.min(selectedStart - line.start(), line.text().length()));
@@ -371,14 +371,15 @@ public abstract class BookScreen extends Screen {
                     int highlightX = getContentX(focus) + this.textRenderer.getWidth(before);
                     int highlightWidth = this.textRenderer.getWidth(selected);
 
-                    this.fill(highlightX,lineY,highlightX + highlightWidth,lineY + 8,0x800000FF);
+                    this.fill(highlightX, lineY, highlightX + highlightWidth, lineY + 8, 0x800000FF);
                 }
 
                 int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
-                if(cursor > 0 && content.charAt(cursor - 1) == '\n') {
+                int cursorPrev = cursor - 1;
+                if(cursorPrev == line.start() && cursorPrev == line.end()) {
                     cursorX = getContentX(focus);
                     cursorY = lineY + 8;
-                } else if (cursor >= line.start() && cursor <= line.end()) {
+                } else if(cursor >= line.start() && cursor <= line.end()) {
                     int offset = cursor - line.start();
                     String beforeC = line.text().substring(0, offset);
                     cursorX = getContentX(focus) + this.textRenderer.getWidth(beforeC);
