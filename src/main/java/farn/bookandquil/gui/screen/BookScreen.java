@@ -25,7 +25,6 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class BookScreen extends Screen {
     protected final PlayerEntity player;
@@ -50,6 +49,7 @@ public abstract class BookScreen extends Screen {
     protected PageFocus pageFocus = PageFocus.FIRST;
     protected int bookTitleCenterX = 0;
     protected int bookDoubleCenterX = 0;
+    protected int bookCenterY = 0;
     protected String underscore = "§0_";
 
     protected int selectionStartX = -1;
@@ -409,18 +409,21 @@ public abstract class BookScreen extends Screen {
         this.buttons.clear();
         Keyboard.enableRepeatEvents(true);
         this.cursorPos = getContent(pageFocus).length();
-        if(this.writable) {
-            this.buttons.add(this.signButton = new ButtonWidget(3, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.signButton")));
-            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.done")));
-            this.buttons.add(this.finalizeButton = new ButtonWidget(5, this.width / 2 - 100, 4 + this.imageHeight, 98, 20, MainUtil.translate("book.finalizeButton")));
-            this.buttons.add(this.cancelButton = new ButtonWidget(4, this.width / 2 + 2, 4 + this.imageHeight, 98, 20, TranslationStorage.getInstance().get("gui.cancel")));
-        } else
-            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 - 100, 4 + this.imageHeight, 200, 20, TranslationStorage.getInstance().get("gui.done")));
-
         this.bookTitleCenterX = (this.width - this.titleImageWidth) / 2;
         this.bookDoubleCenterX = (this.width - this.bookImageWidth) / 2;
-        this.buttons.add(this.nextButton = new PageButton(1, this.bookTitleCenterX + 120, 156, true, this.bookDoubleCenterX + 272, this));
-        this.buttons.add(this.previousButton = new PageButton(2, this.bookTitleCenterX + 38, 156, false, this.bookDoubleCenterX + 48, this));
+        this.bookCenterY = (this.height - this.imageHeight) / 2 - 10;
+        int buttonY = this.bookCenterY + this.imageHeight - 4;
+        int pageButtonY = this.bookCenterY + 156;
+        if(this.writable) {
+            this.buttons.add(this.signButton = new ButtonWidget(3, this.width / 2 - 100, buttonY, 98, 20, MainUtil.translate("book.signButton")));
+            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 + 2, buttonY, 98, 20, TranslationStorage.getInstance().get("gui.done")));
+            this.buttons.add(this.finalizeButton = new ButtonWidget(5, this.width / 2 - 100, buttonY, 98, 20, MainUtil.translate("book.finalizeButton")));
+            this.buttons.add(this.cancelButton = new ButtonWidget(4, this.width / 2 + 2, buttonY, 98, 20, TranslationStorage.getInstance().get("gui.cancel")));
+        } else
+            this.buttons.add(this.doneButton = new ButtonWidget(0, this.width / 2 - 100, buttonY, 200, 20, TranslationStorage.getInstance().get("gui.done")));
+
+        this.buttons.add(this.nextButton = new PageButton(1, this.bookTitleCenterX + 120, pageButtonY, true, this.bookDoubleCenterX + 272, this));
+        this.buttons.add(this.previousButton = new PageButton(2, this.bookTitleCenterX + 38, pageButtonY, false, this.bookDoubleCenterX + 48, this));
         this.buttonUpdate();
     }
 
@@ -510,9 +513,9 @@ public abstract class BookScreen extends Screen {
             } else {
                 int fX = (this.width - this.bookImageWidth) / 2;
                 int sX = fX + (this.bookImageWidth / 2);
-                int yMin = 0;
+                int yMin = this.bookCenterY;
                 int pageWidth = this.bookImageWidth / 2;
-                int yMax = this.imageHeight;
+                int yMax = yMin + this.imageHeight;
                 if(x >= fX && x < fX + pageWidth && y >= yMin && y < yMax) {
                     this.pageFocus = PageFocus.FIRST;
                 } else if(x >= sX && x < sX + pageWidth && y >= yMin && y < yMax) {

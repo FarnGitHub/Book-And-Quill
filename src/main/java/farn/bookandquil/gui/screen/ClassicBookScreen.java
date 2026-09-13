@@ -28,10 +28,10 @@ public class ClassicBookScreen extends BookScreen {
             author = MainUtil.translate("book.unknown.author");
 
         int titleWidth = this.textRenderer.getWidth(title);
-        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, 50, 0);
+        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, this.bookCenterY + 50, 0);
         String authorFormat = MainUtil.translate("book.byAuthor", author);
         int authorWidth = this.textRenderer.getWidth(authorFormat);
-        this.textRenderer.draw(authorFormat, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, 60, 0);
+        this.textRenderer.draw(authorFormat, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, this.bookCenterY + 60, 0);
     }
 
     @Override
@@ -45,14 +45,14 @@ public class ClassicBookScreen extends BookScreen {
 
         String editTitle = MainUtil.translate("book.editTitle");
         int newTitleWidth = this.textRenderer.getWidth(editTitle);
-        this.textRenderer.draw(editTitle, this.bookTitleCenterX + 36 + (116 - newTitleWidth) / 2, 34, 0);
+        this.textRenderer.draw(editTitle, this.bookTitleCenterX + 36 + (116 - newTitleWidth) / 2, this.bookCenterY + 34, 0);
         int titleWidth = this.textRenderer.getWidth(title);
-        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, 50, 0);
+        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, this.bookCenterY + 50, 0);
         String author = String.format(MainUtil.translate("book.byAuthor"), this.player.name);
         int authorWidth = this.textRenderer.getWidth(author);
-        this.textRenderer.draw(author, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, 60, 0);
+        this.textRenderer.draw(author, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, this.bookCenterY + 60, 0);
         String warningFinal = MainUtil.translate("book.finalizeWarning");
-        this.textRenderer.drawSplit(warningFinal, this.bookTitleCenterX + 36, 82, 116, 0);
+        this.textRenderer.drawSplit(warningFinal, this.bookTitleCenterX + 36, this.bookCenterY + 82, 116, 0);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ClassicBookScreen extends BookScreen {
         String content = getContent(PageFocus.FIRST);
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);
-        this.textRenderer.draw(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, 18, 0);
+        this.textRenderer.draw(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, this.bookCenterY + 18, 0);
         this.drawPageContent(content, getContentX(PageFocus.FIRST), PageFocus.FIRST);
     }
 
@@ -73,7 +73,7 @@ public class ClassicBookScreen extends BookScreen {
 
     @Override
     public int getContentY(PageFocus focus) {
-        return 34;
+        return this.bookCenterY + 34;
     }
 
     @Override
@@ -84,6 +84,6 @@ public class ClassicBookScreen extends BookScreen {
     public void drawBook() {
         String tex = "/assets/bookandquill/gui/legacy_book.png";
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId(tex));
-        this.drawTexture(this.bookTitleCenterX, 2, 0, 0, this.titleImageWidth, this.imageHeight);
+        this.drawTexture(this.bookTitleCenterX, this.bookCenterY + 2, 0, 0, this.titleImageWidth, this.imageHeight);
     }
 }
