@@ -17,6 +17,9 @@
     ],
     "gcapi3": [
       "farn.bookandquil.config.ConfigListener"
+    ],
+    "bhcreative:event_bus": [
+      "farn.bookandquil.config.BHCreativeListener"
     ]
   },
   "depends": {
