@@ -3,6 +3,7 @@ package farn.bookandquill.gui;
 import farn.bookandquill.util.PageFocus;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.StringTranslate;
 
 public class GuiBookClassic extends GuiBook {
     protected GuiBookClassic(EntityPlayer player, ItemStack book, boolean writable) {
@@ -19,15 +20,15 @@ public class GuiBookClassic extends GuiBook {
         this.drawBook();
         String title = this.getBookData().getString("title");
         if(title.isEmpty())
-            title = "No Title";
+            title = StringTranslate.getInstance().translateKey("bookandquill.book.no.title");
 
         String author = this.getBookData().getString("author");
         if(author.isEmpty())
-            author = "Unknown Author";
+            author = StringTranslate.getInstance().translateKey("bookandquill.book.unknown.author");
 
         int titleWidth = this.fontRenderer.getStringWidth(title);
         this.fontRenderer.drawString(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, 50, 0);
-        String authorFormat = String.format("by %1$s", author);
+        String authorFormat = StringTranslate.getInstance().translateKeyFormat("bookandquill.book.byAuthor", author);
         int authorWidth = this.fontRenderer.getStringWidth(authorFormat);
         this.fontRenderer.drawString(authorFormat, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, 60, 0);
     }
@@ -41,30 +42,42 @@ public class GuiBookClassic extends GuiBook {
             title += this.underscore;
         }
 
-        String editTitle = "Enter Book Title:";
+        String editTitle = StringTranslate.getInstance().translateKey("bookandquill.book.editTitle");
         int newTitleWidth = this.fontRenderer.getStringWidth(editTitle);
         this.fontRenderer.drawString(editTitle, this.bookTitleCenterX + 36 + (116 - newTitleWidth) / 2, 34, 0);
         int titleWidth = this.fontRenderer.getStringWidth(title);
         this.fontRenderer.drawString(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, 50, 0);
-        String author = String.format("by %1$s", this.player.username);
+        String author = StringTranslate.getInstance().translateKeyFormat("bookandquill.book.byAuthor", this.player.username);
         int authorWidth = this.fontRenderer.getStringWidth(author);
         this.fontRenderer.drawString(author, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, 60, 0);
-        String warningFinal = "Note! When you sign the book, it will no longer be editable.";
+        String warningFinal = StringTranslate.getInstance().translateKey("bookandquill.book.finalizeWarning");
         this.fontRenderer.func_27278_a(warningFinal, this.bookTitleCenterX + 36, 82, 116, 0);
     }
 
     @Override
     public void renderBook() {
         this.drawBook();
-        String pageIndicator = String.format("Page %1$s of %2$s", this.currentPage + 1, this.totalPages);
+        String pageIndicator = StringTranslate.getInstance().translateKeyFormat("bookandquill.book.pageIndicator", this.currentPage + 1, this.totalPages);
         String content = getContent(PageFocus.FIRST);
-        if(this.writable) {
-            content += this.underscore;
-        }
 
         int pageIndiWidth = this.fontRenderer.getStringWidth(pageIndicator);
         this.fontRenderer.drawString(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, 18, 0);
-        this.fontRenderer.func_27278_a(content, this.bookTitleCenterX + 36, 34, 116, 0);
+        this.drawPageContent(content, this.bookTitleCenterX + 36, PageFocus.FIRST);
+    }
+
+    @Override
+    public int getContentX(PageFocus focus) {
+        return this.bookTitleCenterX + 36;
+    }
+
+    @Override
+    public int getContentY(PageFocus focus) {
+        return 34;
+    }
+
+    @Override
+    public int getContentWidth(PageFocus focus) {
+        return 116;
     }
 
     public void drawBook() {

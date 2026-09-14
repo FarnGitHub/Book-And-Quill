@@ -7,12 +7,11 @@ import farn.bookandquill.item.ItemWrittenBook;
 import farn.bookandquill.mod.guiapi.Config;
 import net.minecraft.src.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class BookAndQuill {
     public static Item writableBook;
@@ -24,6 +23,7 @@ public class BookAndQuill {
     public static final String ICON_PATH = "/assets/bookandquill/icon.png";
     public static boolean hasGuiApi = false;
 
+
     private BookAndQuill() {
         throw new AssertionError();
     }
@@ -33,14 +33,13 @@ public class BookAndQuill {
             throw new RuntimeException("BookAndQuill: ItemNBT Mod not found, this mod require it");
         }
 
-        writableBook = new ItemWritableBook(mod_BookAndQuill.bookAndQuilID).setItemName("farn.code.bookandquill.writablebook");
-        ModLoader.AddLocalization(writableBook.getItemName() + ".name", "Book And Quill");
+        addLocalization();
+
+        writableBook = new ItemWritableBook(mod_BookAndQuill.bookAndQuilID).setItemName("bookandquill.writablebook");
         writableBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/assets/bookandquill/textures/item/writingBook.png"));
 
         //Written Book Item
-        writtenBook = new ItemWrittenBook(mod_BookAndQuill.writtenBookID).setItemName("farn.code.bookandquill.writtenbook");
-        ModLoader.AddLocalization(writtenBook.getItemName() + ".name", "Written Book");
-        ModLoader.AddLocalization(writtenBook.getItemName() + ".name.copy", "Written Book (Copy)");
+        writtenBook = new ItemWrittenBook(mod_BookAndQuill.writtenBookID).setItemName("bookandquill.writtenbook");
         writtenBook.setIconIndex(ModLoader.addOverride("/gui/items.png", "/assets/bookandquill/textures/item/writtenBook.png"));
 
         //Book And Quill Recipe
@@ -69,7 +68,7 @@ public class BookAndQuill {
         }
     }
 
-    public static <T extends NBTBase> T copyOf(NBTBase tag) {
+    public static <T extends NBTBase> T copyOf(T tag) {
         ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
         DataOutputStream outputStream = new DataOutputStream(byteOutput);
         NBTBase.writeTag(tag, outputStream);
@@ -93,6 +92,23 @@ public class BookAndQuill {
 
     public static boolean pauseGame() {
         return hasGuiApi && Config.INSTANCE.pauseGame.get("");
+    }
+
+    private static void addLocalization() {
+        Properties localization = new Properties();
+        try {
+            InputStream in = BookAndQuill.class.getResourceAsStream("/assets/bookandquill/lang/en_US.lang");
+            localization.load(in);
+            for(Map.Entry<Object, Object> set : localization.entrySet()) {
+                ModLoader.AddLocalization((String)set.getKey(), (String)set.getValue());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
     }
 
 }

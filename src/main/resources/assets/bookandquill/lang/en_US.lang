@@ -1,0 +1,11 @@
+item.bookandquill.writablebook.name=Book And Quill
+item.bookandquill.writtenbook.name=Written Book
+item.bookandquill.writtenbook.copy.name=Written Book (Copy)
+bookandquill.book.pageIndicator=Page %1$s of %2$s
+bookandquill.book.byAuthor=by %1$s
+bookandquill.book.signButton=Sign
+bookandquill.book.editTitle=Enter Book Title:
+bookandquill.book.finalizeButton=Sign and Close
+bookandquill.book.finalizeWarning=Note! When you sign the book, it will no longer be editable.
+bookandquill.book.no.title=No Title
+bookandquill.book.unknown.author=Unknown Author
