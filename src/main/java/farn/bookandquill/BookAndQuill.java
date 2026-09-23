@@ -30,7 +30,7 @@ public class BookAndQuill {
 
     public static void init() {
         if(!hasClass("mod_ItemNBT")) {
-            throw new RuntimeException("BookAndQuill: ItemNBT Mod not found, this mod require it");
+            System.out.println("BookAndQuill: ItemNBT Mod not found, this mod require it");
         }
 
         addLocalization();
