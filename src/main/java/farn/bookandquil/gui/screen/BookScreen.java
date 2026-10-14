@@ -6,8 +6,8 @@ import farn.bookandquil.packet.BookContentC2SPacket;
 import farn.bookandquil.packet.SigningBookC2SPacket;
 import farn.bookandquil.util.MainUtil;
 import farn.bookandquil.util.PageFocus;
-import farn.bookandquil.util.TextUtils;
-import farn.bookandquil.util.TextLine;
+import farn.bookandquil.util.text.TextUtils;
+import farn.bookandquil.util.text.TextLine;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.TranslationStorage;
@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.util.CharacterUtils;
 import net.modificationstation.stationapi.api.network.packet.PacketHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -163,7 +162,7 @@ public abstract class BookScreen extends Screen {
                     this.addToContent("\n", hasSelection());
                     return;
                 default:
-                    if(CharacterUtils.VALID_CHARACTERS.indexOf(character) >= 0) {
+                    if(TextUtils.isCharAllowed(character)) {
                         this.addToContent(Character.toString(character), hasSelection());
                     }
             }
@@ -187,7 +186,7 @@ public abstract class BookScreen extends Screen {
 
                 return;
             default:
-                if(this.title.length() < 16 && CharacterUtils.VALID_CHARACTERS.indexOf(character) >= 0) {
+                if(this.title.length() < 16 && TextUtils.isCharAllowed(character)) {
                     this.title = this.title + character;
                     this.buttonUpdate();
                     this.modified = true;
@@ -331,10 +330,23 @@ public abstract class BookScreen extends Screen {
         if (lines.isEmpty())
             return 0;
 
-        int lineIndex = (mouseY - getContentY(this.pageFocus)) / 8;
+        int relativeY = mouseY - getContentY(this.pageFocus);
+        int lineY = 0;
 
-        if (lineIndex < 0)
+        if (relativeY < 0)
             return 0;
+
+        int lineIndex = 0;
+
+        for (; lineIndex < lines.size(); lineIndex++) {
+            TextLine line = lines.get(lineIndex);
+            int lineHeight = TextUtils.getHeight(line.text());
+
+            if (relativeY < lineY + lineHeight)
+                break;
+
+            lineY += lineHeight;
+        }
 
         if (lineIndex >= lines.size())
             return content.length();
@@ -346,13 +358,33 @@ public abstract class BookScreen extends Screen {
         if (relativeX <= 0)
             return line.start();
 
-        for (int i = 0; i < line.text().length(); i++) {
-            int previousWidth = i == 0 ? 0 : this.textRenderer.getWidth(line.text().substring(0, i));
+        boolean isRightToLeft = TextUtils.isRightToLeft(line.text());
+        String lineText = line.text();
+        int lineWidth = TextUtils.getWidth(lineText);
 
-            int characterWidth = this.textRenderer.getWidth(line.text().substring(0, i + 1));
+        if (isRightToLeft) {
+            if (relativeX >= lineWidth)
+                return line.start();
 
-            if (relativeX < (previousWidth + characterWidth) / 2) {
-                return line.start() + i;
+            int remainingWidth = lineWidth;
+
+            for (int i = 0; i < lineText.length(); i++) {
+                int nextWidth = TextUtils.getWidth(lineText.substring(i + 1));
+
+                int characterWidth = remainingWidth - nextWidth;
+
+                if (relativeX < nextWidth + characterWidth / 2)
+                    return line.start() + i;
+
+                remainingWidth = nextWidth;
+            }
+        } else {
+            for (int i = 0; i < lineText.length(); i++) {
+                int previousWidth = TextUtils.getWidth(lineText.substring(0, i));
+                int nextWidth = TextUtils.getWidth(lineText.substring(0, i + 1));
+
+                if (relativeX < (previousWidth + nextWidth) / 2)
+                    return line.start() + i;
             }
         }
 
@@ -365,7 +397,7 @@ public abstract class BookScreen extends Screen {
         List<TextLine> lines = TextUtils.getTextLines(content, getContentWidth(focus));
         for (int i = 0; i < lines.size(); i++) {
             TextLine line = lines.get(i);
-            int lineY = getContentY(focus) + i * 8;
+            int lineY = getContentY(focus) + i * TextUtils.getHeight(line.text());
             if(this.pageFocus == focus) {
                 if (hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
                     int selectedStart = Math.max(getSelectionMin(), line.start());
@@ -374,22 +406,24 @@ public abstract class BookScreen extends Screen {
                     int endOffset = Math.max(0, Math.min(selectedEnd - line.start(), line.text().length()));
                     String before = line.text().substring(0, startOffset);
                     String selected = line.text().substring(startOffset, endOffset);
-                    int highlightX = getContentX(focus) + this.textRenderer.getWidth(before);
-                    int highlightWidth = this.textRenderer.getWidth(selected);
+                    int highlightX = getContentX(focus) + TextUtils.getWidth(before);
+                    int highlightWidth = TextUtils.getWidth(selected);
 
                     this.fill(highlightX, lineY, highlightX + highlightWidth, lineY + 8, 0x800000FF);
                 }
 
                 int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
                 int cursorPrev = cursor - 1;
-                if(cursorPrev == line.end()) {
-                    cursorX = getContentX(focus);
-                    cursorY = lineY + 8;
-                } else if(cursor >= line.start() && cursor <= line.end()) {
+                if(cursor >= line.start() && cursor <= line.end()) {
                     int offset = cursor - line.start();
                     String beforeC = line.text().substring(0, offset);
-                    cursorX = getContentX(focus) + this.textRenderer.getWidth(beforeC);
+                    cursorX = getContentX(focus) + TextUtils.getWidth(beforeC);
                     cursorY = lineY;
+                }
+
+                if(cursorPrev == line.end()) {
+                    cursorX = getContentX(focus);
+                    cursorY = lineY + TextUtils.getHeight(" ");
                 }
             }
             this.textRenderer.draw(line.text(),x,lineY,0);

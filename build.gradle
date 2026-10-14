@@ -140,6 +140,9 @@ dependencies {
     }
 
     modRuntimeOnly("maven.modrinth:fast-stapi-intro:2.0.0-b1.7.3")
+
+    modCompileOnly("maven.modrinth:translated-legacy:2.1.0-b1.7.3")
+
 }
 
 processResources {

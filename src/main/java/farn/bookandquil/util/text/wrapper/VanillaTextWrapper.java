@@ -1,13 +1,15 @@
-package farn.bookandquil.util;
+package farn.bookandquil.util.text.wrapper;
 
+import farn.bookandquil.util.text.TextLine;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.CharacterUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextUtils {
+public class VanillaTextWrapper implements TextWrapper {
 
-    public static List<TextLine> getTextLines(String text, int width) {
+    public List<TextLine> getTextLines(String text, int width) {
         List<TextLine> lines = new ArrayList<>();
 
         int paragraphStart = 0;
@@ -35,7 +37,7 @@ public class TextUtils {
         return lines;
     }
 
-    public static int getTextLinesCount(String text, int width) {
+    public int getTextLinesCount(String text, int width) {
         int count = 0;
 
         int paragraphStart = 0;
@@ -54,7 +56,7 @@ public class TextUtils {
             }
 
             if (paragraphStart == newline) {
-                count += 8;
+                count += getHeight(text);
             }
 
             paragraphStart = newline + 1;
@@ -63,7 +65,7 @@ public class TextUtils {
         return count;
     }
 
-    public static void addWrappedLines(String original, int start, int end, int width, List<TextLine> lines) {
+    public void addWrappedLines(String original, int start, int end, int width, List<TextLine> lines) {
 
         if (start == end) {
             return;
@@ -134,7 +136,7 @@ public class TextUtils {
         }
     }
 
-    public static int addWrappedCounts(String original, int start, int end, int width, int ogCount) {
+    public int addWrappedCounts(String original, int start, int end, int width, int ogCount) {
 
         if (start == end) {
             return ogCount;
@@ -167,7 +169,7 @@ public class TextUtils {
 
                     int nextStart = searchIndex;
 
-                    while(nextStart < end && original.charAt(nextStart) == ' ')
+                    while (nextStart < end && original.charAt(nextStart) == ' ')
                         nextStart++;
 
                     searchIndex = nextStart + nextWord.length();
@@ -188,22 +190,36 @@ public class TextUtils {
 
                 String part = line.substring(0, chars);
 
-                if (!part.trim().isEmpty()) {
-                    ogCount += 8;
+                String trimmedPart = part.trim();
+                if (!trimmedPart.isEmpty()) {
+                    ogCount += getHeight(trimmedPart);
                 }
 
                 line = line.substring(chars);
             }
 
-            if (!line.trim().isEmpty()) {
-                ogCount += 8;
+            String trimmedPart = line.trim();
+            if (!trimmedPart.isEmpty()) {
+                ogCount += getHeight(trimmedPart);
             }
         }
 
         return ogCount;
     }
 
-    private static int getWidth(String text) {
+    public int getWidth(String text) {
         return Minecraft.INSTANCE.textRenderer.getWidth(text);
+    }
+
+    public int getHeight(String text) {
+        return 8;
+    }
+
+    public boolean isCharAllowed(char c) {
+        return CharacterUtils.VALID_CHARACTERS.indexOf(c) != -1;
+    }
+
+    public boolean isRightToLeft(String text) {
+        return false;
     }
 }
