@@ -23,6 +23,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class BookScreen extends Screen {
@@ -31,50 +32,56 @@ public abstract class BookScreen extends Screen {
     protected final boolean writable;
     protected boolean modified;
     protected boolean signing;
-    protected int tick;
-    protected final int titleImageWidth = 192;
-    protected final int bookImageWidth = 344;
-    protected final int imageHeight = 192;
-    protected int totalPages;
-    protected int currentPage = 0;
     protected NbtList pages;
     protected String title = "";
+
     protected PageButton nextButton;
     protected PageButton previousButton;
     protected ButtonWidget doneButton;
     protected ButtonWidget signButton;
     protected ButtonWidget finalizeButton;
     protected ButtonWidget cancelButton;
-    protected PageFocus pageFocus = PageFocus.FIRST;
+
+    protected final int titleImageWidth = 192;
+    protected final int bookImageWidth = 344;
+    protected final int imageHeight = 192;
     protected int bookTitleCenterX = 0;
     protected int bookDoubleCenterX = 0;
     protected int bookCenterY = 0;
-    protected String underscore = "§0_";
 
+    protected String underscore = "§0_";
+    protected int tick;
+
+    protected PageFocus pageFocus = PageFocus.FIRST;
+    protected int totalPages;
+    private int currentPage = 0;
     protected int selectionStartX = -1;
     protected int selectionStartY = -1;
     protected int selectionEndX = -1;
     protected int selectionEndY = -1;
     protected boolean selecting = false;
-
     public int cursorPos = 0;
+    @SuppressWarnings("unchecked")
+    public List<TextLine>[] textLines = new List[incrementBy(0)];
 
     protected BookScreen(PlayerEntity player, ItemStack book, boolean writable) {
         this.player = player;
         this.book = book;
         this.writable = writable;
         if(!writable) {
-            currentPage = -1;
+            this.setCurrentPage(-1);
         }
 
         this.pages = this.getBookData().getList("pages").copy();
-        int needToAdd = increment(0) - this.pages.size();
+        int needToAdd = incrementBy(0) - this.pages.size();
         if(needToAdd > 0) {
             for (int i = 0; i < needToAdd; ++i)
                 this.pages.add(new NbtString(""));
         } else if(!singlePage() && (this.pages.size() & 1) == 1)
             this.pages.add(new NbtString(""));
         this.totalPages = this.pages.size();
+
+        this.updateAllTextLines();
     }
 
     public static BookScreen get(PlayerEntity player, ItemStack book, boolean writable) {
@@ -96,10 +103,10 @@ public abstract class BookScreen extends Screen {
     }
 
     private void buttonUpdate() {
-        this.nextButton.visible = !this.signing && (this.currentPage < this.totalPages - 1 || this.writable);
-        this.nextButton.updatePosition(this.currentPage <= -1 || singlePage());
-        this.previousButton.visible =  !this.signing && (this.currentPage > 0 || this.currentPage > -1 && !writable);
-        this.previousButton.updatePosition(this.currentPage <= -1 || singlePage());
+        this.nextButton.visible = !this.signing && (this.getCurrentPage() < this.totalPages - 1 || this.writable);
+        this.nextButton.updatePosition(this.getCurrentPage() <= -1 || singlePage());
+        this.previousButton.visible =  !this.signing && (this.getCurrentPage() > 0 || this.getCurrentPage() > -1 && !writable);
+        this.previousButton.updatePosition(this.getCurrentPage() <= -1 || singlePage());
         this.doneButton.visible = !this.writable || !this.signing;
         if(this.writable) {
             this.signButton.visible = !this.signing;
@@ -140,12 +147,32 @@ public abstract class BookScreen extends Screen {
 
     protected void newPage() {
         if(this.pages != null && this.pages.size() < 50) {
-            int increment = increment(this.totalPages);
+            int increment = incrementBy(this.totalPages);
             for(int i = 0; i < increment; ++i)
                 this.pages.add(new NbtString(""));
             this.totalPages += increment;
             this.modified = true;
         }
+    }
+
+    protected int getCurrentPage() {
+        return this.currentPage;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    protected void setCurrentPage(int page) {
+        this.currentPage = page;
+        this.updateAllTextLines();
+    }
+
+    protected void pageForward() {
+        this.currentPage += this.incrementBy(this.currentPage);
+        this.updateAllTextLines();
+    }
+
+    protected void pageBack() {
+        this.currentPage -= this.incrementBy(this.currentPage);
+        this.updateAllTextLines();
     }
 
     protected void typeInBook(char character, int keycode) {
@@ -195,25 +222,24 @@ public abstract class BookScreen extends Screen {
     }
 
     protected String getContent(PageFocus focus) {
-        int currentPage = this.currentPage + focus.increment();
-        if(
-           currentPage >= 0 &&
-           this.pages != null &&
-           this.pages.size() >= 0 &&
-           currentPage < this.pages.size() &&
-           focus != PageFocus.UNFOCUS &&
-           this.pages.get(currentPage) instanceof NbtString string
-        ) {
-            return string.value;
-        }
+        if(this.pages.size() < 1 || focus == null || focus == PageFocus.UNFOCUS) return "";
 
+        int focusPage = this.getCurrentPage() + focus.increment();
+
+        if(
+           focusPage >= 0 &&
+           focusPage < this.pages.size() &&
+           this.pages.get(focusPage) instanceof NbtString string
+        )
+            return string.value;
         return "";
     }
 
     private void setContent(PageFocus focus, String content) {
-        int currentPage = this.currentPage + focus.increment();
+        int currentPage = this.getCurrentPage() + focus.increment();
         if(this.pages != null && currentPage >= 0 && currentPage < this.pages.size()) {
             ((NbtString)this.pages.get(currentPage)).value = content;
+            updateTextLines(focus);
             this.modified = true;
             this.unSelected();
         }
@@ -255,13 +281,13 @@ public abstract class BookScreen extends Screen {
     }
 
 
-    public int increment(int integer) {
+    public int incrementBy(int integer) {
         return (integer & 1) == 1 || singlePage() ? 1 : 2;
     }
 
     public int getTotalDisplay() {
          return Math.max(
-                 increment(0),
+                 incrementBy(0),
                  (totalPages & 1) == 1 && !singlePage() ?
                  this.totalPages + 1 : totalPages
          );
@@ -325,7 +351,7 @@ public abstract class BookScreen extends Screen {
     protected int getCharacterIndexAt(int mouseX, int mouseY) {
         String content = getContent(this.pageFocus);
 
-        List<TextLine> lines = TextUtils.getTextLines(content, getContentWidth(this.pageFocus));
+        List<TextLine> lines = getTextLines(this.pageFocus);
 
         if (lines.isEmpty())
             return 0;
@@ -394,7 +420,7 @@ public abstract class BookScreen extends Screen {
     protected void drawPageContent(String content, int x, PageFocus focus) {
         int cursorX = getContentX(focus);
         int cursorY = getContentY(focus);
-        List<TextLine> lines = TextUtils.getTextLines(content, getContentWidth(focus));
+        List<TextLine> lines = getTextLines(focus);
         for (int i = 0; i < lines.size(); i++) {
             TextLine line = lines.get(i);
             int lineY = getContentY(focus) + i * TextUtils.getHeight(line.text());
@@ -437,6 +463,26 @@ public abstract class BookScreen extends Screen {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(this.getSelectedText()), null);
     }
 
+    private List<TextLine> getTextLines(PageFocus focus) {
+        int index = focus.increment();
+        return index >= 0 && index < textLines.length ?
+                textLines[focus.increment()] : Collections.emptyList();
+    }
+
+    private void updateTextLines(PageFocus focus) {
+        int index = focus.increment();
+        if(index >= 0 && index < textLines.length)
+            TextUtils.getTextLines(textLines[focus.increment()], getContent(focus), getContentWidth(focus));
+    }
+
+    private void updateAllTextLines() {
+        int index = 0;
+        for(List<TextLine> lines : textLines) {
+            ++index;
+            TextUtils.getTextLines(lines, getContent(PageFocus.from(index)), getContentWidth(PageFocus.from(index)));
+        }
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public void init() {
@@ -464,7 +510,7 @@ public abstract class BookScreen extends Screen {
     @Override
     public void render(int mouseX, int mouseY, float tick) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        if(currentPage <= -1 && !writable && !this.signing)
+        if(this.getCurrentPage() <= -1 && !writable && !this.signing)
             renderBookCover();
         else if(this.signing)
             renderSigning();
@@ -510,19 +556,19 @@ public abstract class BookScreen extends Screen {
                 this.pageFocus = PageFocus.UNFOCUS;
                 this.unSelected();
             } else if(button.id == 1) {
-                int currentPage = this.currentPage + (singlePage() ? 0 : 1);
+                int currentPage = this.getCurrentPage() + (singlePage() ? 0 : 1);
                 if (currentPage < this.totalPages - 1) {
-                    this.currentPage += increment(this.currentPage);
+                    this.pageForward();
                 } else if(this.writable) {
                     this.newPage();
                     if(currentPage < this.totalPages - 1)
-                        this.currentPage += increment(this.currentPage);
+                        this.pageForward();
                 }
             } else if(button.id == 2) {
-                if (this.currentPage > -1) {
-                    this.currentPage -= increment(this.currentPage);
-                    if (this.currentPage < -1) {
-                        this.currentPage = -1;
+                if (this.getCurrentPage() > -1) {
+                    this.pageBack();
+                    if (this.getCurrentPage() < -1) {
+                        this.setCurrentPage(-1);
                     }
                 }
             } else if(button.id == 6) {

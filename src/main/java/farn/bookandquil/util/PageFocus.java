@@ -8,4 +8,8 @@ public enum PageFocus {
     public int increment() {
         return this.ordinal() - 1;
     }
+
+    public static PageFocus from(int value) {
+        return PageFocus.values()[value];
+    }
 }

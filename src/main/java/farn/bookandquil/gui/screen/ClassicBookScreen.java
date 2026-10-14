@@ -58,7 +58,7 @@ public class ClassicBookScreen extends BookScreen {
     @Override
     public void renderBook() {
         this.drawBook();
-        String pageIndicator = String.format(MainUtil.translate("book.pageIndicator"), this.currentPage + 1, this.totalPages);
+        String pageIndicator = String.format(MainUtil.translate("book.pageIndicator"), this.getCurrentPage() + 1, this.totalPages);
         String content = getContent(PageFocus.FIRST);
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);

@@ -11,9 +11,8 @@ public class TextUtils {
             FabricLoader.getInstance().isModLoaded("translated-legacy") ?
                     new TranslatedLegacyTextWrapper() : new VanillaTextWrapper();
 
-
-    public static List<TextLine> getTextLines(String text, int width) {
-        return WRAPPER.getTextLines(text, width);
+    public static List<TextLine> getTextLines(List<TextLine> lines, String text, int width) {
+        return WRAPPER.getTextLines(lines, text, width);
     }
 
     public static int getTextLinesCount(String text, int width) {

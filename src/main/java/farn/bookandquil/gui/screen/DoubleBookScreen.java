@@ -60,8 +60,8 @@ public class DoubleBookScreen extends BookScreen {
     public void renderBook() {
         this.drawDoubleBook();
         int total = getTotalDisplay();
-        String pageIndicator1 = MainUtil.translate("book.pageIndicator", this.currentPage + 1, total);
-        String pageIndicator2 = MainUtil.translate("book.pageIndicator", this.currentPage + 2, total);
+        String pageIndicator1 = MainUtil.translate("book.pageIndicator", this.getCurrentPage() + 1, total);
+        String pageIndicator2 = MainUtil.translate("book.pageIndicator", this.getCurrentPage() + 2, total);
         String content1 = this.getContent(PageFocus.FIRST);
         String content2 = this.getContent(PageFocus.SECOND);
 

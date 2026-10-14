@@ -12,8 +12,12 @@ import java.util.Locale;
 
 public class TranslatedLegacyTextWrapper implements TextWrapper{
 
-    public List<TextLine> getTextLines(String text, int width) {
-        List<TextLine> lines = new ArrayList<>();
+    public List<TextLine> getTextLines(List<TextLine> lines, String text, int width) {
+        if(lines == null)
+            lines = new ArrayList<>();
+        else
+            lines.clear();
+
         int paragraphStart = 0;
         while(paragraphStart <= text.length()) {
             int newline = text.indexOf('\n', paragraphStart);

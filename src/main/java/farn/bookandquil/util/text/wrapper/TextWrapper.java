@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface TextWrapper {
 
-    default List<TextLine> getTextLines(String text, int width) {
+    default List<TextLine> getTextLines(List<TextLine> lines, String text, int width) {
         return Collections.emptyList();
     }
 
