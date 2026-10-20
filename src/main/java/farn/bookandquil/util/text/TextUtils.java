@@ -7,7 +7,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.util.List;
 
 public class TextUtils {
-    static TextWrapper WRAPPER =
+
+    private static final TextWrapper WRAPPER =
             FabricLoader.getInstance().isModLoaded("translated-legacy") ?
                     new TranslatedLegacyTextWrapper() : new VanillaTextWrapper();
 

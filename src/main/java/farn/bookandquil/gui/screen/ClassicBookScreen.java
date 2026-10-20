@@ -12,13 +12,16 @@ public class ClassicBookScreen extends BookScreen {
     }
 
     @Override
-    public boolean singlePage() {
-        return true;
+    public int pageDisplayInScreen() {
+        return 1;
     }
 
     @Override
     public void renderBookCover() {
         this.drawBook();
+        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
+        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
+        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
         String title = this.getBookData().getString("title");
         if(title.isEmpty())
             title = MainUtil.translate("book.no.title");
@@ -28,31 +31,34 @@ public class ClassicBookScreen extends BookScreen {
             author = MainUtil.translate("book.unknown.author");
 
         int titleWidth = this.textRenderer.getWidth(title);
-        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, this.bookCenterY + 50, 0);
+        this.textRenderer.draw(title, contentXStart + (contentWidth - titleWidth) / 2, contentYStart + 16, 0);
         String authorFormat = MainUtil.translate("book.byAuthor", author);
         int authorWidth = this.textRenderer.getWidth(authorFormat);
-        this.textRenderer.draw(authorFormat, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, this.bookCenterY + 60, 0);
+        this.textRenderer.draw(authorFormat, contentXStart + (contentWidth - authorWidth) / 2, contentYStart + 26, 0);
     }
 
     @Override
     public void renderSigning() {
         this.drawBook();
-        String title = this.title;
-
-        if(this.writable) {
-            title += this.underscore;
-        }
+        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
+        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
+        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
 
         String editTitle = MainUtil.translate("book.editTitle");
         int newTitleWidth = this.textRenderer.getWidth(editTitle);
-        this.textRenderer.draw(editTitle, this.bookTitleCenterX + 36 + (116 - newTitleWidth) / 2, this.bookCenterY + 34, 0);
-        int titleWidth = this.textRenderer.getWidth(title);
-        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, this.bookCenterY + 50, 0);
+        this.textRenderer.draw(editTitle, contentXStart + (contentWidth - newTitleWidth) / 2, contentYStart, 0);
+        int titleWidth = this.textRenderer.getWidth(this.title);
+        int titleStartX = contentXStart + (contentWidth - titleWidth) / 2;
+        if(this.cursorFlag) {
+            int titleEndX = titleStartX + titleWidth;
+            this.fill(titleEndX - 1, contentYStart + 24, titleEndX, contentYStart + 16, 0xFF808080);
+        }
+        this.textRenderer.draw(this.title, titleStartX, contentYStart + 16, 0);
         String author = String.format(MainUtil.translate("book.byAuthor"), this.player.name);
         int authorWidth = this.textRenderer.getWidth(author);
-        this.textRenderer.draw(author, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, this.bookCenterY + 60, 0);
+        this.textRenderer.draw(author, contentXStart + (contentWidth - authorWidth) / 2, contentYStart + 26, 0);
         String warningFinal = MainUtil.translate("book.finalizeWarning");
-        this.textRenderer.drawSplit(warningFinal, this.bookTitleCenterX + 36, this.bookCenterY + 82, 116, 0);
+        this.textRenderer.drawSplit(warningFinal, contentXStart, contentYStart + 48, contentWidth, 0);
     }
 
     @Override
@@ -63,22 +69,7 @@ public class ClassicBookScreen extends BookScreen {
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);
         this.textRenderer.draw(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, this.bookCenterY + 18, 0);
-        this.drawPageContent(content, getContentX(PageFocus.FIRST), PageFocus.FIRST);
-    }
-
-    @Override
-    public int getContentX(PageFocus focus) {
-        return this.bookTitleCenterX + 36;
-    }
-
-    @Override
-    public int getContentY(PageFocus focus) {
-        return this.bookCenterY + 34;
-    }
-
-    @Override
-    public int getContentWidth(PageFocus focus) {
-        return 116;
+        this.drawPageContent(content, getContentXStart(PageFocus.FIRST), PageFocus.FIRST);
     }
 
     public void drawBook() {

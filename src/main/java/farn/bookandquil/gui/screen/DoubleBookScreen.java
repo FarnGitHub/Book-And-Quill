@@ -13,13 +13,32 @@ public class DoubleBookScreen extends BookScreen {
     }
 
     @Override
-    public boolean singlePage() {
-        return false;
+    protected void handlePageClick(int x, int y) {
+        int fX = (this.width - this.bookImageWidth) / 2;
+        int sX = fX + (this.bookImageWidth / 2);
+        int yMin = this.bookCenterY;
+        int pageWidth = this.bookImageWidth / 2;
+        int yMax = yMin + this.imageHeight;
+        if(x >= fX && x < fX + pageWidth && y >= yMin && y < yMax) {
+            this.pageFocus = PageFocus.FIRST;
+        } else if(x >= sX && x < sX + pageWidth && y >= yMin && y < yMax) {
+            this.pageFocus = PageFocus.SECOND;
+        } else {
+            this.pageFocus = PageFocus.UNFOCUS;
+        }
+    }
+
+    @Override
+    public int pageDisplayInScreen() {
+        return 2;
     }
 
     @Override
     public void renderBookCover() {
         this.drawBookCover();
+        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
+        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
+        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
         String title = this.getBookData().getString("title");
         if(title.isEmpty()) {
             title = MainUtil.translate("book.no.title");
@@ -30,30 +49,34 @@ public class DoubleBookScreen extends BookScreen {
         }
 
         int titleWidth = this.textRenderer.getWidth(title);
-        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, this.bookCenterY + 50, -1);
+        this.textRenderer.draw(title, contentXStart + (contentWidth - titleWidth) / 2, contentYStart + 16, -1);
         String authorFormat = MainUtil.translate("book.byAuthor", author);
         int authorWidth = this.textRenderer.getWidth(authorFormat);
-        this.textRenderer.draw(authorFormat, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, this.bookCenterY + 60, -1);
+        this.textRenderer.draw(authorFormat, contentXStart + (contentWidth - authorWidth) / 2, contentYStart + 26, -1);
     }
 
     @Override
     public void renderSigning() {
         this.drawBookCover();
-        String title = this.title;
-
-        if(this.writable)
-            title += this.underscore;
+        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
+        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
+        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
 
         String editTitle = MainUtil.translate("book.editTitle");
         int newTitleWidth = this.textRenderer.getWidth(editTitle);
-        this.textRenderer.draw(editTitle, this.bookTitleCenterX + 36 + (116 - newTitleWidth) / 2, this.bookCenterY + 34, -1);
-        int titleWidth = this.textRenderer.getWidth(title);
-        this.textRenderer.draw(title, this.bookTitleCenterX + 36 + (116 - titleWidth) / 2, this.bookCenterY + 50, -1);
+        this.textRenderer.draw(editTitle, contentXStart + (contentWidth - newTitleWidth) / 2, contentYStart, -1);
+        int titleWidth = this.textRenderer.getWidth(this.title);
+        int titleStartX = contentXStart + (contentWidth - titleWidth) / 2;
+        if(this.cursorFlag) {
+            int titleEndX = titleStartX + titleWidth;
+            this.fill(titleEndX - 1, contentYStart + 24, titleEndX, contentYStart + 16, 0xFF808080);
+        }
+        this.textRenderer.draw(this.title, titleStartX, contentYStart + 16, -1);
         String author = String.format(MainUtil.translate("book.byAuthor"), this.player.name);
         int authorWidth = this.textRenderer.getWidth(author);
-        this.textRenderer.draw(author, this.bookTitleCenterX + 36 + (116 - authorWidth) / 2, this.bookCenterY + 60, -1);
+        this.textRenderer.draw(author, contentXStart + (contentWidth - authorWidth) / 2, contentYStart + 26, -1);
         String warningFinal = MainUtil.translate("book.finalizeWarning");
-        this.textRenderer.drawSplit(warningFinal, this.bookTitleCenterX + 36, this.bookCenterY + 82, 116, -1);
+        this.textRenderer.drawSplit(warningFinal, contentXStart, contentYStart + 48, contentWidth, -1);
     }
 
     @Override
@@ -67,26 +90,19 @@ public class DoubleBookScreen extends BookScreen {
 
         int indicatorWidth = this.textRenderer.getWidth(pageIndicator2);
         this.textRenderer.draw(pageIndicator1, this.bookDoubleCenterX + 44, this.bookCenterY + 18, 0);
-        this.drawPageContent(content1, getContentX(PageFocus.FIRST), PageFocus.FIRST);
+        this.drawPageContent(content1, getContentXStart(PageFocus.FIRST), PageFocus.FIRST);
         this.textRenderer.draw(pageIndicator2, this.bookDoubleCenterX - indicatorWidth + this.bookImageWidth - 44, this.bookCenterY + 18, 0);
-        this.drawPageContent(content2, getContentX(PageFocus.SECOND), PageFocus.SECOND);
+        this.drawPageContent(content2, getContentXStart(PageFocus.SECOND), PageFocus.SECOND);
     }
 
     @Override
-    public int getContentX(PageFocus focus) {
-        return focus == PageFocus.FIRST ?
-                this.bookDoubleCenterX + 42 :
-                this.bookDoubleCenterX + this.bookImageWidth - 156;
-    }
-
-    @Override
-    public int getContentY(PageFocus focus) {
-        return this.bookCenterY + 34;
-    }
-
-    @Override
-    public int getContentWidth(PageFocus focus) {
-        return 116;
+    public int getContentXStart(PageFocus focus) {
+        if(focus == PageFocus.FIRST)
+            return this.bookDoubleCenterX + 42;
+        else if(focus == PageFocus.SECOND)
+            return this.bookDoubleCenterX + this.bookImageWidth - 156;
+        else
+            return super.getContentXStart(focus);
     }
 
     public void drawBookCover() {

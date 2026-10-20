@@ -1,6 +1,7 @@
 package farn.bookandquil.gui.widget;
 
 import farn.bookandquil.gui.screen.BookScreen;
+import farn.bookandquil.gui.screen.DoubleBookScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import org.lwjgl.opengl.GL11;
@@ -28,7 +29,7 @@ public class PageButton extends ButtonWidget {
 			int v = 192;
 			if(mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height) {
 				u += 23;
-			} else if(!this.bookScreen.singlePage() && this.title) {
+			} else if(this.bookScreen instanceof DoubleBookScreen && this.title) {
 				u += 46;
 			}
 

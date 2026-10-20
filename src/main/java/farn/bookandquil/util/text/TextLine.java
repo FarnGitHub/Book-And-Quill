@@ -11,16 +11,4 @@ public class TextLine {
         this.end = end;
     }
 
-    public String text() {
-        return text;
-    }
-
-    public int start() {
-        return start;
-    }
-
-    public int end() {
-        return end;
-    }
-
 }
