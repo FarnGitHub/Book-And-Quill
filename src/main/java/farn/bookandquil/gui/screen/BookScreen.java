@@ -101,25 +101,20 @@ public abstract class BookScreen extends Screen {
     protected abstract void renderBookCover();
     protected abstract void renderSigning();
     protected abstract void renderBook();
-
     public int getContentXStart(PageFocus focus) {
         return this.centerX + 36;
     }
-
     @SuppressWarnings("unused")
     public int getContentYStart(PageFocus focus) {
         return this.centerY + 34;
     }
-
     @SuppressWarnings("unused")
     public int getContentWidth(PageFocus focus) {
         return 116;
     }
-
     protected void handlePageClick(int x, int y) {
         this.focus = PageFocus.FIRST;
     }
-
     protected void updateButton() {
         this.nextButton.visible = !this.signing && (this.getCurrentPage() < this.totalPages - 1 || this.writable);
         this.previousButton.visible =  !this.signing && (this.getCurrentPage() > 0 || this.getCurrentPage() > -1 && !writable);
@@ -404,7 +399,6 @@ public abstract class BookScreen extends Screen {
             return line.start;
 
         String lineText = line.text;
-        int lineWidth = TextUtils.getWidth(lineText);
 
         for (int i = 0; i < lineText.length(); i++) {
             int previousWidth = TextUtils.getWidth(lineText.substring(0, i));
@@ -440,15 +434,11 @@ public abstract class BookScreen extends Screen {
                 }
 
                 int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
-                int cursorPrev = cursor - 1;
                 if(cursor >= line.start && cursor <= line.end) {
                     int offset = cursor - line.start;
                     String beforeC = line.text.substring(0, offset);
                     cursorX = getContentXStart(focus) + TextUtils.getWidth(beforeC);
                     cursorY = lineY;
-                } else if(cursorPrev == line.end) {
-                    cursorX = getContentXStart(focus);
-                    cursorY = lineY + TextUtils.getHeight(" ");
                 }
             }
         }
@@ -499,13 +489,13 @@ public abstract class BookScreen extends Screen {
     private void updateTextLines(PageFocus focus) {
         int index = focus.ordinal();
         if(index < textCaches.length)
-            TextUtils.splits(textCaches[index], getContent(focus), getContentWidth(focus));
+            TextUtils.splits(textCaches[index], getContent(focus), MAX_CONTENT_BOUND);
     }
 
     private void updateAllTextsCaches() {
         for(int i = 0; i < textCaches.length; i++) {
             PageFocus focus = PageFocus.from(i);
-            textCaches[i] = TextUtils.splits(textCaches[i], getContent(focus), getContentWidth(focus));
+            textCaches[i] = TextUtils.splits(textCaches[i], getContent(focus), MAX_CONTENT_BOUND);
         }
     }
 
