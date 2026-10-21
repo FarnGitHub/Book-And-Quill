@@ -31,7 +31,7 @@ public class VanillaTextWrapper implements TextWrapper {
                         lineStart = lineEnd;
                     }
 
-                    while (getWidth(text.substring(lineStart, lBreak).trim()) > width) {
+                    while (getWidth(text.substring(lineStart, lBreak)) > width) {
                         int splitAt = findHardBreak(text, lineStart, lBreak, width);
                         String trimmed = text.substring(lineStart, splitAt);
                         lines.add(new TextLine(trimmed, start + lineStart, start + lineEnd));
