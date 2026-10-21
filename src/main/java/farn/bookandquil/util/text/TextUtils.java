@@ -18,7 +18,7 @@ public class TextUtils {
 
     public static int splitsTotalHeight(String text, int width) {
         return WRAPPER.splits(null, text, width).stream().
-                mapToInt(line -> getWidth(line.text)).sum();
+                mapToInt(line -> getHeight(line.text)).sum();
     }
 
     public static int getWidth(String text) {
