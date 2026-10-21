@@ -24,17 +24,15 @@ public class VanillaTextWrapper implements TextWrapper {
 
         for(int lBreak = breaks.next(); lBreak != -1; lBreak = breaks.next()) {
             if (lBreak > lineEnd) {
-                if (getWidth(text.substring(lineStart, lBreak).trim()) > width) {
+                if (getWidth(text.substring(lineStart, lBreak)) > width) {
                     if (lineEnd > lineStart) {
-                        String trimmed = text.substring(lineStart, lineEnd);
-                        lines.add(new TextLine(trimmed, start + lineStart, start + lineEnd));
+                        lines.add(new TextLine(text.substring(lineStart, lineEnd), start + lineStart, start + lineEnd));
                         lineStart = lineEnd;
                     }
 
                     while (getWidth(text.substring(lineStart, lBreak)) > width) {
                         int splitAt = findHardBreak(text, lineStart, lBreak, width);
-                        String trimmed = text.substring(lineStart, splitAt);
-                        lines.add(new TextLine(trimmed, start + lineStart, start + lineEnd));
+                        lines.add(new TextLine(text.substring(lineStart, splitAt), start + lineStart, start + lineEnd));
                         lineStart = splitAt;
                     }
 

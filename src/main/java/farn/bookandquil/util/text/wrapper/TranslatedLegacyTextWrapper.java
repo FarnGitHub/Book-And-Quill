@@ -27,17 +27,15 @@ public class TranslatedLegacyTextWrapper implements TextWrapper{
         for(int lBreak = breaks.next(); lBreak != -1; lBreak = breaks.next()) {
             lBreak = TextUtils.toClusterBoundary(text, lBreak);
             if (lBreak > lineEnd) {
-                if (getWidth(TextUtilsAccessor.BQ_trimEnd(text.substring(lineStart, lBreak))) > width) {
+                if (getWidth(text.substring(lineStart, lBreak)) > width) {
                     if (lineEnd > lineStart) {
-                        String trimmed = text.substring(lineStart, lineEnd);
-                        lines.add(new TextLine(trimmed, start + lineStart, start + lineEnd));
+                        lines.add(new TextLine(text.substring(lineStart, lineEnd), start + lineStart, start + lineEnd));
                         lineStart = lineEnd;
                     }
 
-                    while (getWidth(TextUtilsAccessor.BQ_trimEnd(text.substring(lineStart, lBreak))) > width) {
+                    while (getWidth(text.substring(lineStart, lBreak)) > width) {
                         int splitAt = TextUtilsAccessor.BQ_findHardBreak(text, lineStart, lBreak, width, this::getWidth);
-                        String trimmed = text.substring(lineStart, splitAt);
-                        lines.add(new TextLine(trimmed, start + lineStart, start + lineEnd));
+                        lines.add(new TextLine(text.substring(lineStart, splitAt), start + lineStart, start + lineEnd));
                         lineStart = splitAt;
                     }
 
