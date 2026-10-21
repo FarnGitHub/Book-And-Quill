@@ -1,6 +1,7 @@
 package farn.bookandquil.util;
 
 import farn.bookandquil.config.ConfigListener;
+import farn.bookandquil.gui.screen.BookScreen;
 import farn.bookandquil.item.WrittenBookItem;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.resource.language.TranslationStorage;
@@ -24,11 +25,11 @@ public class MainUtil {
 
     @SuppressWarnings("unchecked")
     public static boolean validContent(NbtList listNbt) {
-        if(listNbt == null || listNbt.size() > 50) return false;
+        if(listNbt == null || listNbt.size() > BookScreen.MAX_PAGE) return false;
         List<NbtElement> list = listNbt.value;
 
         for(NbtElement content : list)
-            if(!(content instanceof NbtString str && str.value.length() <= 256))
+            if(!(content instanceof NbtString str && str.value.length() <= BookScreen.MAX_CHAR_PER_PAGE))
                 return false;
 
         return true;

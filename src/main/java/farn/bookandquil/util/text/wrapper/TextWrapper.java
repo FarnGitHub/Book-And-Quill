@@ -7,27 +7,12 @@ import java.util.List;
 
 public interface TextWrapper {
 
-    default List<TextLine> getTextLines(List<TextLine> lines, String text, int width) {
-        return Collections.emptyList();
-    }
+    List<TextLine> splits(List<TextLine> lines, String text, int width);
 
-    default int getTextLinesCount(String text, int width) {
-        return 0;
-    }
+    int getWidth(String text);
 
-    default int getWidth(String text) {
-        return 16;
-    }
+    int getHeight(String text);
 
-    default int getHeight(String text) {
-        return 8;
-    }
+    boolean isCharAllowed(char c);
 
-    default boolean isCharAllowed(char c) {
-        return false;
-    }
-
-    default boolean isRightToLeft(String text) {
-        return false;
-    }
 }

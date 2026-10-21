@@ -68,13 +68,13 @@ public class ClassicBookScreen extends BookScreen {
         String content = getContent(PageFocus.FIRST);
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);
-        this.textRenderer.draw(pageIndicator, this.bookTitleCenterX - pageIndiWidth + this.titleImageWidth - 44, this.bookCenterY + 18, 0);
+        this.textRenderer.draw(pageIndicator, this.centerX - pageIndiWidth + IMAGE_WIDTH - 44, this.centerY + 18, 0);
         this.drawPageContent(content, getContentXStart(PageFocus.FIRST), PageFocus.FIRST);
     }
 
     public void drawBook() {
         String tex = "/assets/bookandquill/gui/legacy_book.png";
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId(tex));
-        this.drawTexture(this.bookTitleCenterX, this.bookCenterY + 2, 0, 0, this.titleImageWidth, this.imageHeight);
+        this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
     }
 }

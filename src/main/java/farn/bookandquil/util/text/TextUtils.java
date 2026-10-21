@@ -12,12 +12,13 @@ public class TextUtils {
             FabricLoader.getInstance().isModLoaded("translated-legacy") ?
                     new TranslatedLegacyTextWrapper() : new VanillaTextWrapper();
 
-    public static List<TextLine> getTextLines(List<TextLine> lines, String text, int width) {
-        return WRAPPER.getTextLines(lines, text, width);
+    public static List<TextLine> splits(List<TextLine> lines, String text, int width) {
+        return WRAPPER.splits(lines, text, width);
     }
 
-    public static int getTextLinesCount(String text, int width) {
-        return WRAPPER.getTextLinesCount(text, width);
+    public static int splitsTotalHeight(String text, int width) {
+        return WRAPPER.splits(null, text, width).stream().
+                mapToInt(line -> getWidth(line.text)).sum();
     }
 
     public static int getWidth(String text) {
@@ -30,9 +31,5 @@ public class TextUtils {
 
     public static boolean isCharAllowed(char c) {
         return WRAPPER.isCharAllowed(c);
-    }
-
-    public static boolean isRightToLeft(String text) {
-        return WRAPPER.isRightToLeft(text);
     }
 }

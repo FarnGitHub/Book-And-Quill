@@ -8,17 +8,11 @@ import org.lwjgl.opengl.GL11;
 
 public class PageButton extends ButtonWidget {
 	private final boolean nextButton;
-	private final int titleX;
-	private final int altX;
-	private boolean title;
-	private final BookScreen bookScreen;
+	private boolean altTexture;
 
-	public PageButton(int id, int x, int y, boolean next, int altX, BookScreen screen) {
+	public PageButton(int id, int x, int y, boolean next) {
 		super(id, x, y, 23, 13, "");
 		this.nextButton = next;
-		this.titleX = x;
-		this.altX = altX;
-		this.bookScreen = screen;
 	}
 
 	public void render(Minecraft mc, int mouseX, int mouseY) {
@@ -29,7 +23,7 @@ public class PageButton extends ButtonWidget {
 			int v = 192;
 			if(mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height) {
 				u += 23;
-			} else if(this.bookScreen instanceof DoubleBookScreen && this.title) {
+			} else if(this.altTexture) {
 				u += 46;
 			}
 
@@ -41,11 +35,7 @@ public class PageButton extends ButtonWidget {
 		}
 	}
 
-	public void updatePosition(boolean titlePage) {
-		this.title = titlePage;
-		if(titlePage)
-			this.x = titleX;
-		else
-			this.x = altX;
+	public void setAltTexture(boolean altTexture) {
+		this.altTexture = altTexture;
 	}
 }
