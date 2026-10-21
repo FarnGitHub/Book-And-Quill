@@ -6,18 +6,19 @@ import net.minecraft.util.CharacterUtils;
 
 import java.text.BreakIterator;
 import java.util.List;
+import java.util.Locale;
 
 public class VanillaTextWrapper implements TextWrapper {
 
     @Override
     public void subSplits(List<TextLine> lines, String fullText, int width, int start, int end) {
         if(start == end)  {
-            lines.add(new TextLine("", start, end));
+            lines.add(new TextLine(" ", start, end));
             return;
         }
 
         String text = fullText.substring(start, end);
-        BreakIterator breaks = BreakIterator.getLineInstance();
+        BreakIterator breaks = BreakIterator.getLineInstance(Locale.US);
         breaks.setText(text);
         int lineStart = 0;
         int lineEnd = 0;
@@ -32,7 +33,7 @@ public class VanillaTextWrapper implements TextWrapper {
 
                     while (getWidth(text.substring(lineStart, lBreak)) > width) {
                         int splitAt = findHardBreak(text, lineStart, lBreak, width);
-                        lines.add(new TextLine(text.substring(lineStart, splitAt), start + lineStart, start + lineEnd));
+                        lines.add(new TextLine(text.substring(lineStart, splitAt), start + lineStart, start + splitAt));
                         lineStart = splitAt;
                     }
 
@@ -61,12 +62,7 @@ public class VanillaTextWrapper implements TextWrapper {
             }
         }
 
-        int splitAt = lo - 1;
-        if (splitAt <= start) {
-            splitAt = start + 1;
-        }
-
-        return splitAt;
+        return lo - 1;
     }
 
     @Override

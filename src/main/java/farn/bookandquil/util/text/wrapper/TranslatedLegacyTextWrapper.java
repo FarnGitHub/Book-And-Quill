@@ -14,7 +14,7 @@ public class TranslatedLegacyTextWrapper implements TextWrapper{
     @Override
     public void subSplits(List<TextLine> lines, String fullText, int width, int start, int end) {
         if(start == end)  {
-            lines.add(new TextLine("", start, end));
+            lines.add(new TextLine(" ", start, end));
             return;
         }
 
@@ -35,7 +35,7 @@ public class TranslatedLegacyTextWrapper implements TextWrapper{
 
                     while (getWidth(text.substring(lineStart, lBreak)) > width) {
                         int splitAt = TextUtilsAccessor.BQ_findHardBreak(text, lineStart, lBreak, width, this::getWidth);
-                        lines.add(new TextLine(text.substring(lineStart, splitAt), start + lineStart, start + lineEnd));
+                        lines.add(new TextLine(text.substring(lineStart, splitAt), start + lineStart, start + splitAt));
                         lineStart = splitAt;
                     }
 

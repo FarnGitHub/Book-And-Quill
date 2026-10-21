@@ -362,32 +362,17 @@ public abstract class BookScreen extends Screen {
     }
 
     protected int getIndexAt(int mouseX, int mouseY) {
-        String content = getContent(this.focus);
-
         List<TextLine> lines = getTextLines(this.focus);
 
-        if (lines ==  null || lines.isEmpty())
+        if (lines.isEmpty())
             return 0;
 
-        int relativeY = mouseY - getContentYStart(this.focus);
-        int lineY = 0;
+        int lineIndex = (mouseY - getContentYStart(this.focus)) / 8;
 
-        if (relativeY < 0)
+        if (lineIndex < 0)
             return 0;
 
-        int lineIndex = 0;
-
-        while(lineIndex < lines.size()) {
-            TextLine line = lines.get(lineIndex);
-            int lineHeight = TextUtils.getHeight(line.text);
-
-            if (relativeY < lineY + lineHeight)
-                break;
-
-            lineY += lineHeight;
-            lineIndex++;
-        }
-
+        String content = getContent(this.focus);
         if (lineIndex >= lines.size())
             return content.length();
 
@@ -398,14 +383,14 @@ public abstract class BookScreen extends Screen {
         if (relativeX <= 0)
             return line.start;
 
-        String lineText = line.text;
+        for (int i = 0; i < line.text.length(); i++) {
+            int previousWidth = i == 0 ? 0 : this.textRenderer.getWidth(line.text.substring(0, i));
 
-        for (int i = 0; i < lineText.length(); i++) {
-            int previousWidth = TextUtils.getWidth(lineText.substring(0, i));
-            int nextWidth = TextUtils.getWidth(lineText.substring(0, i + 1));
+            int characterWidth = this.textRenderer.getWidth(line.text.substring(0, i + 1));
 
-            if (relativeX < (previousWidth + nextWidth) / 2)
+            if (relativeX < (previousWidth + characterWidth) / 2) {
                 return line.start + i;
+            }
         }
 
         return line.end;
