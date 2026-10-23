@@ -1,11 +1,7 @@
 package farn.bookandquil.util.text.handler;
 
-import farn.bookandquil.mixins.TextUtilsAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.CharacterUtils;
-
-import java.text.BreakIterator;
-import java.util.Locale;
 
 public class VanillaHandler implements Handler {
 
