@@ -1,7 +1,5 @@
 package farn.bookandquil.util.text.handler;
 
-import java.util.Locale;
-
 public interface Handler {
 
     int widthOf(String text);
@@ -10,6 +8,11 @@ public interface Handler {
 
     boolean charAllowed(char c);
 
-    Locale locale(String text);
+    void forEachSplit(String text, int width, LineInsert insert);
+
+    @FunctionalInterface
+    interface LineInsert {
+        void apply(int start, int end);
+    }
 
 }

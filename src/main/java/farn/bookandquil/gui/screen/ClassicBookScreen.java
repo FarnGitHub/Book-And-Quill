@@ -18,10 +18,10 @@ public class ClassicBookScreen extends BookScreen {
 
     @Override
     public void renderBookCover() {
-        this.bindBookTexture(0);
-        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
-        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
-        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
+        this.bindBookTexture();
+        int contentXStart = contentXStart(PageFocus.UNFOCUS);
+        int contentYStart = contentYStart(PageFocus.UNFOCUS);
+        int contentWidth = contentWidth(PageFocus.UNFOCUS);
         String title = this.getBookData().getString("title");
         if(title.isEmpty())
             title = MainUtil.translate("book.no.title");
@@ -37,22 +37,32 @@ public class ClassicBookScreen extends BookScreen {
         this.textRenderer.draw(authorFormat, contentXStart + (contentWidth - authorWidth) / 2, contentYStart + 26, 0);
     }
 
-    public int getContentXStart(PageFocus focus) {
+    @Override
+    public int contentXStart(PageFocus focus) {
         return this.centerX + 36;
     }
-    public int getContentYStart(PageFocus focus) {
+
+    @Override
+    public int contentYStart(PageFocus focus) {
         return this.centerY + 34;
     }
-    public int getContentWidth(PageFocus focus) {
+
+    @Override
+    public int contentWidth(PageFocus focus) {
         return 116;
     }
 
     @Override
+    public void pageClick(int x, int y) {
+        this.focus = PageFocus.FIRST;
+    }
+
+    @Override
     public void renderSigning() {
-        this.bindBookTexture(0);
-        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
-        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
-        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
+        this.bindBookTexture();
+        int contentXStart = contentXStart(PageFocus.UNFOCUS);
+        int contentYStart = contentYStart(PageFocus.UNFOCUS);
+        int contentWidth = contentWidth(PageFocus.UNFOCUS);
 
         String editTitle = MainUtil.translate("book.editTitle");
         int newTitleWidth = this.textRenderer.getWidth(editTitle);
@@ -73,17 +83,16 @@ public class ClassicBookScreen extends BookScreen {
 
     @Override
     public void renderBook() {
-        this.bindBookTexture(0);
+        this.bindBookTexture();
         String pageIndicator = String.format(MainUtil.translate("book.pageIndicator"), this.getCurrentPage() + 1, this.totalPages);
         String content = getContent(PageFocus.FIRST);
 
         int pageIndiWidth = this.textRenderer.getWidth(pageIndicator);
         this.textRenderer.draw(pageIndicator, this.centerX - pageIndiWidth + IMAGE_WIDTH - 44, this.centerY + 18, 0);
-        this.drawPageContent(content, getContentXStart(PageFocus.FIRST), PageFocus.FIRST);
+        this.drawPageContent(content, contentXStart(PageFocus.FIRST), PageFocus.FIRST);
     }
 
-    @Override
-    public void bindBookTexture(int type) {
+    public void bindBookTexture() {
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/legacy_book.png"));
         this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
     }

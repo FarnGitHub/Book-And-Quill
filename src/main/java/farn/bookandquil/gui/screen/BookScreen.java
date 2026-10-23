@@ -24,16 +24,20 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class BookScreen extends Screen {
+public abstract class BookScreen extends Screen implements BookScreenImpl {
     public static final int IMAGE_WIDTH = 192;
     public static final int IMAGE_HEIGHT = 192;
     public static final int DOUBLE_IMAGE_WIDTH = 344;
     public static final int MAX_CONTENT_BOUND = 118;
     public static final int MAX_CHAR_PER_PAGE = 256;
     public static final int MAX_PAGE = 100;
+    public static final int MAX_TITLE_LENGTH = 16;
+
 
     protected int centerX = 0;
     protected int doubleCenterX = 0;
@@ -58,7 +62,7 @@ public abstract class BookScreen extends Screen {
     protected int selectionEndX = -1;
     protected int selectionEndY = -1;
     protected boolean selecting = false;
-    public int cursorPos = 0;
+    protected int cursorPos = 0;
 
     protected boolean cursorFlag = false;
     private int tick;
@@ -83,6 +87,7 @@ public abstract class BookScreen extends Screen {
             for (int i = 0; i < needToAdd; ++i)
                 this.pages.add(new NbtString(""));
         this.totalPages = this.pages.size();
+        Arrays.setAll(textCaches, index -> new ArrayList<>());
         this.updateAllTextsCaches();
 
         if(!writable) {
@@ -97,31 +102,7 @@ public abstract class BookScreen extends Screen {
                 new DoubleBookScreen(player, book, writable);
     }
 
-    public abstract int pageDisplayInScreen();
-    public abstract void renderBookCover();
-    public abstract void renderSigning();
-    public abstract void renderBook();
-    public abstract void bindBookTexture(int type);
-    public abstract int getContentXStart(PageFocus focus);
-    public abstract int getContentYStart(PageFocus focus);
-    public abstract int getContentWidth(PageFocus focus);
-
-    protected void handlePageClick(int x, int y) {
-        this.focus = PageFocus.FIRST;
-    }
-    protected void updateButton() {
-        this.nextButton.visible = !this.signing && (this.getCurrentPage() < this.totalPages - 1 || this.writable);
-        this.previousButton.visible =  !this.signing && (this.getCurrentPage() > 0 || this.getCurrentPage() > -1 && !writable);
-        this.doneButton.visible = !this.writable || !this.signing;
-        if(this.writable) {
-            this.signButton.visible = !this.signing;
-            this.cancelButton.visible = this.signing;
-            this.finalizeButton.visible = this.signing;
-            this.finalizeButton.active = !this.title.trim().isEmpty();
-        }
-    }
-
-    public NbtCompound getBookData() {
+    protected NbtCompound getBookData() {
         return this.book.getStationNbt();
     }
 
@@ -221,7 +202,7 @@ public abstract class BookScreen extends Screen {
 
                 return;
             default:
-                if(this.title.length() < 16 && TextUtils.charAllowed(character)) {
+                if(this.title.length() < MAX_TITLE_LENGTH && TextUtils.charAllowed(character)) {
                     this.title = this.title + character;
                     this.updateButton();
                     this.modified = true;
@@ -286,17 +267,17 @@ public abstract class BookScreen extends Screen {
     }
 
 
-    public int incrementBy(int integer) {
+    protected int incrementBy(int integer) {
         return incrementBy(integer, false);
     }
 
-    public int incrementBy(int integer, boolean accept0) {
+    protected int incrementBy(int integer, boolean accept0) {
         int displayed = this.pageDisplayInScreen();
         int calculated = ((displayed - integer % displayed) % displayed);
         return calculated == 0 && !accept0 ? displayed : calculated;
     }
 
-    public int getTotalDisplay() {
+    protected int getTotalDisplay() {
          return this.totalPages + incrementBy(this.totalPages, true);
     }
 
@@ -361,7 +342,7 @@ public abstract class BookScreen extends Screen {
         if (lines.isEmpty())
             return 0;
 
-        int lineIndex = (mouseY - getContentYStart(this.focus)) / 8;
+        int lineIndex = (mouseY - contentYStart(this.focus)) / 8;
 
         if (lineIndex < 0)
             return 0;
@@ -372,7 +353,7 @@ public abstract class BookScreen extends Screen {
 
         TextLine line = lines.get(lineIndex);
 
-        int relativeX = mouseX - getContentXStart(this.focus);
+        int relativeX = mouseX - contentXStart(this.focus);
 
         if (relativeX <= 0)
             return line.start();
@@ -391,13 +372,13 @@ public abstract class BookScreen extends Screen {
     }
 
     protected void drawPageContent(String content, int x, PageFocus focus) {
-        int cursorX = getContentXStart(focus);
-        int cursorY = getContentYStart(focus);
+        int cursorX = contentXStart(focus);
+        int cursorY = contentYStart(focus);
         List<TextLine> lines = getTextLines(focus);
         if(lines == null) return;
         for (int i = 0; i < lines.size(); i++) {
             TextLine line = lines.get(i);
-            int lineY = getContentYStart(focus) + i * TextUtils.heightOf(line.text());
+            int lineY = contentYStart(focus) + i * TextUtils.heightOf(line.text());
             this.textRenderer.draw(line.text(),x,lineY,0);
             if(this.focus == focus) {
                 if (hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
@@ -407,7 +388,7 @@ public abstract class BookScreen extends Screen {
                     int endOffset = Math.max(0, Math.min(selectedEnd - line.start(), line.text().length()));
                     String before = line.text().substring(0, startOffset);
                     String selected = line.text().substring(startOffset, endOffset);
-                    int highlightX = getContentXStart(focus) + TextUtils.widthOf(before);
+                    int highlightX = contentXStart(focus) + TextUtils.widthOf(before);
                     int highlightWidth = TextUtils.widthOf(selected);
                     this.renderHighlight(highlightX, lineY, highlightX + highlightWidth, lineY + TextUtils.heightOf(line.text()));
                 }
@@ -416,7 +397,7 @@ public abstract class BookScreen extends Screen {
                 if(cursor >= line.start() && cursor <= line.end()) {
                     int offset = cursor - line.start();
                     String beforeC = line.text().substring(0, offset);
-                    cursorX = getContentXStart(focus) + TextUtils.widthOf(beforeC);
+                    cursorX = contentXStart(focus) + TextUtils.widthOf(beforeC);
                     cursorY = lineY;
                 }
             }
@@ -474,6 +455,19 @@ public abstract class BookScreen extends Screen {
         for(int i = 0; i < textCaches.length; i++) {
             PageFocus focus = PageFocus.from(i);
             textCaches[i] = TextUtils.splits(textCaches[i], getContent(focus), MAX_CONTENT_BOUND);
+        }
+    }
+
+    @Override
+    public void updateButton() {
+        this.nextButton.visible = !this.signing && (this.getCurrentPage() < this.totalPages - 1 || this.writable);
+        this.previousButton.visible =  !this.signing && (this.getCurrentPage() > 0 || this.getCurrentPage() > -1 && !writable);
+        this.doneButton.visible = !this.writable || !this.signing;
+        if(this.writable) {
+            this.signButton.visible = !this.signing;
+            this.cancelButton.visible = this.signing;
+            this.finalizeButton.visible = this.signing;
+            this.finalizeButton.active = !this.title.trim().isEmpty();
         }
     }
 
@@ -582,7 +576,7 @@ public abstract class BookScreen extends Screen {
         if(this.signing)
             this.focus = PageFocus.UNFOCUS;
         else
-            this.handlePageClick(x, y);
+            this.pageClick(x, y);
 
         if(prevFocus != this.focus)
             this.unSelected();

@@ -13,7 +13,7 @@ public class DoubleBookScreen extends BookScreen {
     }
 
     @Override
-    protected void handlePageClick(int x, int y) {
+    public void pageClick(int x, int y) {
         int fX = (this.width - DOUBLE_IMAGE_WIDTH) / 2;
         int sX = fX + (DOUBLE_IMAGE_WIDTH / 2);
         int yMin = this.centerY;
@@ -34,7 +34,7 @@ public class DoubleBookScreen extends BookScreen {
     }
 
     @Override
-    public int getContentXStart(PageFocus focus) {
+    public int contentXStart(PageFocus focus) {
         if(focus == PageFocus.FIRST)
             return this.doubleCenterX + 42;
         else if(focus == PageFocus.SECOND)
@@ -44,17 +44,17 @@ public class DoubleBookScreen extends BookScreen {
     }
 
     @Override
-    public int getContentYStart(PageFocus focus) {
+    public int contentYStart(PageFocus focus) {
         return this.centerY + 34;
     }
 
     @Override
-    public int getContentWidth(PageFocus focus) {
+    public int contentWidth(PageFocus focus) {
         return 116;
     }
 
     @Override
-    protected void updateButton() {
+    public void updateButton() {
         super.updateButton();
         boolean isTitlePage = this.signing || this.getCurrentPage() < 0;
         this.nextButton.setAltTexture(isTitlePage);
@@ -65,10 +65,10 @@ public class DoubleBookScreen extends BookScreen {
 
     @Override
     public void renderBookCover() {
-        this.bindBookTexture(1);
-        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
-        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
-        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
+        this.bindBookCoverTexture();
+        int contentXStart = contentXStart(PageFocus.UNFOCUS);
+        int contentYStart = contentYStart(PageFocus.UNFOCUS);
+        int contentWidth = contentWidth(PageFocus.UNFOCUS);
         String title = this.getBookData().getString("title");
         if(title.isEmpty()) {
             title = MainUtil.translate("book.no.title");
@@ -87,10 +87,10 @@ public class DoubleBookScreen extends BookScreen {
 
     @Override
     public void renderSigning() {
-        this.bindBookTexture(1);
-        int contentXStart = getContentXStart(PageFocus.UNFOCUS);
-        int contentYStart = getContentYStart(PageFocus.UNFOCUS);
-        int contentWidth = getContentWidth(PageFocus.UNFOCUS);
+        this.bindBookCoverTexture();
+        int contentXStart = contentXStart(PageFocus.UNFOCUS);
+        int contentYStart = contentYStart(PageFocus.UNFOCUS);
+        int contentWidth = contentWidth(PageFocus.UNFOCUS);
 
         String editTitle = MainUtil.translate("book.editTitle");
         int newTitleWidth = this.textRenderer.getWidth(editTitle);
@@ -111,7 +111,7 @@ public class DoubleBookScreen extends BookScreen {
 
     @Override
     public void renderBook() {
-        this.bindBookTexture(0);
+        this.bindBookTexture();
         int total = getTotalDisplay();
         String pageIndicator1 = MainUtil.translate("book.pageIndicator", this.getCurrentPage() + 1, total);
         String pageIndicator2 = MainUtil.translate("book.pageIndicator", this.getCurrentPage() + 2, total);
@@ -120,19 +120,17 @@ public class DoubleBookScreen extends BookScreen {
 
         int indicatorWidth = this.textRenderer.getWidth(pageIndicator2);
         this.textRenderer.draw(pageIndicator1, this.doubleCenterX + 44, this.centerY + 18, 0);
-        this.drawPageContent(content1, getContentXStart(PageFocus.FIRST), PageFocus.FIRST);
+        this.drawPageContent(content1, contentXStart(PageFocus.FIRST), PageFocus.FIRST);
         this.textRenderer.draw(pageIndicator2, this.doubleCenterX - indicatorWidth + DOUBLE_IMAGE_WIDTH - 44, this.centerY + 18, 0);
-        this.drawPageContent(content2, getContentXStart(PageFocus.SECOND), PageFocus.SECOND);
+        this.drawPageContent(content2, contentXStart(PageFocus.SECOND), PageFocus.SECOND);
     }
 
-    @Override
-    public void bindBookTexture(int type) {
-        if(type == 1) {
-            this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/title_book.png"));
-            this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-            return;
-        }
+    public void bindBookCoverTexture() {
+        this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/title_book.png"));
+        this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    }
 
+    public void bindBookTexture() {
         final int x = this.doubleCenterX;
         final int y = this.centerY + 2;
         final int u = 0;
