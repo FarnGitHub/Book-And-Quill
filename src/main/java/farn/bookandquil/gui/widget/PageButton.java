@@ -1,7 +1,5 @@
 package farn.bookandquil.gui.widget;
 
-import farn.bookandquil.gui.screen.BookScreen;
-import farn.bookandquil.gui.screen.DoubleBookScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import org.lwjgl.opengl.GL11;

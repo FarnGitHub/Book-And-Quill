@@ -18,11 +18,6 @@ public interface TextUtilsAccessor {
         throw new AssertionError();
     }
 
-    @Invoker("isRightToLeftParagraph")
-    static boolean BQ_isRightToLeftParagraph(String text) {
-        throw new AssertionError();
-    }
-
     @Invoker("findHardBreak")
     static int BQ_findHardBreak(String text, int start, int end, int maxWidth, ToIntFunction<String> widthFunction) {
         throw new AssertionError();
@@ -32,11 +27,4 @@ public interface TextUtilsAccessor {
     static boolean BQ_containsThai(String text) {
         throw new AssertionError();
     }
-
-    @Invoker("trimEnd")
-    static String BQ_trimEnd(String text) {
-        throw new AssertionError();
-
-    }
-
 }

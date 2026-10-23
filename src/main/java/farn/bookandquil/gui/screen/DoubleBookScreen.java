@@ -34,6 +34,26 @@ public class DoubleBookScreen extends BookScreen {
     }
 
     @Override
+    public int getContentXStart(PageFocus focus) {
+        if(focus == PageFocus.FIRST)
+            return this.doubleCenterX + 42;
+        else if(focus == PageFocus.SECOND)
+            return this.doubleCenterX + DOUBLE_IMAGE_WIDTH - 156;
+        else
+            return this.centerX + 36;
+    }
+
+    @Override
+    public int getContentYStart(PageFocus focus) {
+        return this.centerY + 34;
+    }
+
+    @Override
+    public int getContentWidth(PageFocus focus) {
+        return 116;
+    }
+
+    @Override
     protected void updateButton() {
         super.updateButton();
         boolean isTitlePage = this.signing || this.getCurrentPage() < 0;
@@ -45,7 +65,7 @@ public class DoubleBookScreen extends BookScreen {
 
     @Override
     public void renderBookCover() {
-        this.drawBookCover();
+        this.bindBookTexture(1);
         int contentXStart = getContentXStart(PageFocus.UNFOCUS);
         int contentYStart = getContentYStart(PageFocus.UNFOCUS);
         int contentWidth = getContentWidth(PageFocus.UNFOCUS);
@@ -67,7 +87,7 @@ public class DoubleBookScreen extends BookScreen {
 
     @Override
     public void renderSigning() {
-        this.drawBookCover();
+        this.bindBookTexture(1);
         int contentXStart = getContentXStart(PageFocus.UNFOCUS);
         int contentYStart = getContentYStart(PageFocus.UNFOCUS);
         int contentWidth = getContentWidth(PageFocus.UNFOCUS);
@@ -91,7 +111,7 @@ public class DoubleBookScreen extends BookScreen {
 
     @Override
     public void renderBook() {
-        this.drawDoubleBook();
+        this.bindBookTexture(0);
         int total = getTotalDisplay();
         String pageIndicator1 = MainUtil.translate("book.pageIndicator", this.getCurrentPage() + 1, total);
         String pageIndicator2 = MainUtil.translate("book.pageIndicator", this.getCurrentPage() + 2, total);
@@ -106,32 +126,29 @@ public class DoubleBookScreen extends BookScreen {
     }
 
     @Override
-    public int getContentXStart(PageFocus focus) {
-        if(focus == PageFocus.FIRST)
-            return this.doubleCenterX + 42;
-        else if(focus == PageFocus.SECOND)
-            return this.doubleCenterX + DOUBLE_IMAGE_WIDTH - 156;
-        else
-            return super.getContentXStart(focus);
-    }
+    public void bindBookTexture(int type) {
+        if(type == 1) {
+            this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/title_book.png"));
+            this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+            return;
+        }
 
-    public void drawBookCover() {
-        String tex = "/assets/bookandquill/gui/title_book.png";
-        this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId(tex));
-        this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-    }
+        final int x = this.doubleCenterX;
+        final int y = this.centerY + 2;
+        final int u = 0;
+        final int v = 0;
+        final int width = DOUBLE_IMAGE_WIDTH;
+        final int height = IMAGE_HEIGHT;
+        float xNormal = 1F / width;
+        float yNormal = 1F / height;
 
-    public void drawDoubleBook() {
         this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/double_book.png"));
-        float xNudge = 0.0029296875F;
-        float yNudge = 0.00520833333F;
-        int centerY = this.centerY + 2;
         Tessellator tess = Tessellator.INSTANCE;
         tess.startQuads();
-        tess.vertex(this.doubleCenterX, centerY + IMAGE_HEIGHT, this.zOffset, 0.0F, (float)(IMAGE_HEIGHT) * yNudge);
-        tess.vertex(this.doubleCenterX + DOUBLE_IMAGE_WIDTH, centerY + IMAGE_HEIGHT, this.zOffset, (float)(DOUBLE_IMAGE_WIDTH) * xNudge, (float)(IMAGE_HEIGHT) * yNudge);
-        tess.vertex(this.doubleCenterX + DOUBLE_IMAGE_WIDTH, centerY, this.zOffset, (float)(DOUBLE_IMAGE_WIDTH) * xNudge, 0.0F);
-        tess.vertex(this.doubleCenterX, centerY, this.zOffset, 0.0F, 0.0F);
+        tess.vertex(x, y + height, this.zOffset, u * xNormal, v + height * yNormal);
+        tess.vertex(x + width, y + height, this.zOffset, u + width * xNormal, v + height * yNormal);
+        tess.vertex(x + width, y, this.zOffset, u + width * xNormal, v * yNormal);
+        tess.vertex(x, y, this.zOffset, u * xNormal, v * yNormal);
         tess.draw();
     }
 }

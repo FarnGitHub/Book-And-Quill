@@ -1,53 +1,111 @@
 package farn.bookandquil.util.text;
-import farn.bookandquil.util.text.wrapper.TextWrapper;
-import farn.bookandquil.util.text.wrapper.TranslatedLegacyTextWrapper;
-import farn.bookandquil.util.text.wrapper.VanillaTextWrapper;
+import farn.bookandquil.util.text.handler.Handler;
+import farn.bookandquil.util.text.handler.TranslatedLegacyHandler;
+import farn.bookandquil.util.text.handler.VanillaHandler;
 import net.fabricmc.loader.api.FabricLoader;
 
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextUtils {
-    private static final List<TextLine> DUMMY = new ArrayList<>();
+public final class TextUtils {
 
-    private static final TextWrapper WRAPPER =
+    private static final Handler handler =
             FabricLoader.getInstance().isModLoaded("translated-legacy") ?
-                    new TranslatedLegacyTextWrapper() : new VanillaTextWrapper();
+                    new TranslatedLegacyHandler() : new VanillaHandler();
+
+    private TextUtils() {
+    }
 
     public static List<TextLine> splits(List<TextLine> lines, String text, int width) {
         if(lines == null) lines = new ArrayList<>();
         else lines.clear();
-        int paragraphStart = 0;
-        while (paragraphStart <= text.length()) {
-            int newline = text.indexOf('\n', paragraphStart);
-            if (newline == -1)
-                newline = text.length();
-            WRAPPER.subSplits(lines, text, width, paragraphStart, newline);
-            if (newline == text.length())
-                break;
-            paragraphStart = newline + 1;
+
+        int lStart = 0;
+        BreakIterator breaks = breakIterator(text);
+        while (lStart < text.length()) {
+            int lEnd = splitAt(breaks, text, width, lStart, text.length());
+            String subString = text.substring(lStart, lEnd);
+            lines.add(new TextLine(subString, lStart, lEnd));
+            lStart = lEnd;
         }
         return lines;
     }
 
     public static int splitsTotalHeight(String text, int width) {
-        return splits(DUMMY, text, width).stream().
-                mapToInt(TextUtils::getHeight).sum();
+        int total = 0;
+        int lStart = 0;
+        BreakIterator breaks = breakIterator(text);
+        while (lStart < text.length()) {
+            int lEnd = splitAt(breaks, text, width, lStart, text.length());
+            total += heightOf(text.substring(lStart, lEnd));
+            lStart = lEnd;
+        }
+        return Math.max(total, 8);
     }
 
-    public static int getWidth(String text) {
-        return WRAPPER.getWidth(text);
+    private static int splitAt(BreakIterator breaks, String text, int maxWidth, int start, int end) {
+        if(maxWidth < 1) maxWidth = 1;
+
+        int textLength = text.length();
+        int lineWidth = 0;
+        int index = start;
+        int breakAt = -1;
+        boolean first = true;
+        int boundary = breaks.following(start);
+
+        while (index < textLength) {
+            while (boundary != BreakIterator.DONE && boundary < index)
+                boundary = breaks.next();
+
+            if (boundary == index) {
+                int cut = index;
+                while(cut > start && text.charAt(cut - 1) == ' ') cut--;
+                if (cut > start) breakAt = cut;
+                boundary = breaks.next();
+            }
+
+            char c = text.charAt(index);
+            if(c == '\n') {
+                index--;
+            } else {
+                if (c == ' ') breakAt = index;
+                if (lineWidth != 0) first = false;
+                lineWidth += widthOf(String.valueOf(c));
+                index++;
+            }
+
+            if (c == '\n') {
+                breakAt = ++index;
+                break;
+            }
+
+            if (lineWidth > maxWidth) {
+                if (first) index++;
+                break;
+            }
+        }
+
+        if(index >= end) index = end;
+        boolean needBreak = index != textLength && breakAt != -1 && breakAt < index;
+        return needBreak ? breakAt : index;
     }
 
-    public static int getHeight(String text) {
-        return WRAPPER.getHeight(text);
+    public static int widthOf(String text) {
+        return handler.widthOf(text);
     }
 
-    public static boolean isCharAllowed(char c) {
-        return WRAPPER.isCharAllowed(c);
+    public static int heightOf(String text) {
+        return handler.heightOf(text);
     }
 
-    public static int getHeight(TextLine line) {
-        return WRAPPER.getHeight(line.text);
+    public static boolean charAllowed(char c) {
+        return handler.charAllowed(c);
+    }
+
+    public static BreakIterator breakIterator(String text) {
+        BreakIterator breaks = BreakIterator.getLineInstance(handler.locale(text));
+        breaks.setText(text);
+        return breaks;
     }
 }

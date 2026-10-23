@@ -98,20 +98,14 @@ public abstract class BookScreen extends Screen {
     }
 
     public abstract int pageDisplayInScreen();
-    protected abstract void renderBookCover();
-    protected abstract void renderSigning();
-    protected abstract void renderBook();
-    public int getContentXStart(PageFocus focus) {
-        return this.centerX + 36;
-    }
-    @SuppressWarnings("unused")
-    public int getContentYStart(PageFocus focus) {
-        return this.centerY + 34;
-    }
-    @SuppressWarnings("unused")
-    public int getContentWidth(PageFocus focus) {
-        return 116;
-    }
+    public abstract void renderBookCover();
+    public abstract void renderSigning();
+    public abstract void renderBook();
+    public abstract void bindBookTexture(int type);
+    public abstract int getContentXStart(PageFocus focus);
+    public abstract int getContentYStart(PageFocus focus);
+    public abstract int getContentWidth(PageFocus focus);
+
     protected void handlePageClick(int x, int y) {
         this.focus = PageFocus.FIRST;
     }
@@ -203,7 +197,7 @@ public abstract class BookScreen extends Screen {
                     this.addContent("\n", hasSelection());
                     return;
                 default:
-                    if(TextUtils.isCharAllowed(character)) {
+                    if(TextUtils.charAllowed(character)) {
                         this.addContent(Character.toString(character), hasSelection());
                     }
             }
@@ -227,7 +221,7 @@ public abstract class BookScreen extends Screen {
 
                 return;
             default:
-                if(this.title.length() < 16 && TextUtils.isCharAllowed(character)) {
+                if(this.title.length() < 16 && TextUtils.charAllowed(character)) {
                     this.title = this.title + character;
                     this.updateButton();
                     this.modified = true;
@@ -381,19 +375,19 @@ public abstract class BookScreen extends Screen {
         int relativeX = mouseX - getContentXStart(this.focus);
 
         if (relativeX <= 0)
-            return line.start;
+            return line.start();
 
-        for (int i = 0; i < line.text.length(); i++) {
-            int previousWidth = i == 0 ? 0 : this.textRenderer.getWidth(line.text.substring(0, i));
+        for (int i = 0; i < line.text().length(); i++) {
+            int previousWidth = i == 0 ? 0 : this.textRenderer.getWidth(line.text().substring(0, i));
 
-            int characterWidth = this.textRenderer.getWidth(line.text.substring(0, i + 1));
+            int characterWidth = this.textRenderer.getWidth(line.text().substring(0, i + 1));
 
             if (relativeX < (previousWidth + characterWidth) / 2) {
-                return line.start + i;
+                return line.start() + i;
             }
         }
 
-        return line.end;
+        return line.end();
     }
 
     protected void drawPageContent(String content, int x, PageFocus focus) {
@@ -403,26 +397,26 @@ public abstract class BookScreen extends Screen {
         if(lines == null) return;
         for (int i = 0; i < lines.size(); i++) {
             TextLine line = lines.get(i);
-            int lineY = getContentYStart(focus) + i * TextUtils.getHeight(line.text);
-            this.textRenderer.draw(line.text,x,lineY,0);
+            int lineY = getContentYStart(focus) + i * TextUtils.heightOf(line.text());
+            this.textRenderer.draw(line.text(),x,lineY,0);
             if(this.focus == focus) {
-                if (hasSelection() && getSelectionMax() >= line.start && getSelectionMin() <= line.end) {
-                    int selectedStart = Math.max(getSelectionMin(), line.start);
-                    int selectedEnd = Math.min(getSelectionMax(), line.end);
-                    int startOffset = Math.max(0, Math.min(selectedStart - line.start, line.text.length()));
-                    int endOffset = Math.max(0, Math.min(selectedEnd - line.start, line.text.length()));
-                    String before = line.text.substring(0, startOffset);
-                    String selected = line.text.substring(startOffset, endOffset);
-                    int highlightX = getContentXStart(focus) + TextUtils.getWidth(before);
-                    int highlightWidth = TextUtils.getWidth(selected);
-                    this.renderHighlight(highlightX, lineY, highlightX + highlightWidth, lineY + TextUtils.getHeight(line.text));
+                if (hasSelection() && getSelectionMax() >= line.start() && getSelectionMin() <= line.end()) {
+                    int selectedStart = Math.max(getSelectionMin(), line.start());
+                    int selectedEnd = Math.min(getSelectionMax(), line.end());
+                    int startOffset = Math.max(0, Math.min(selectedStart - line.start(), line.text().length()));
+                    int endOffset = Math.max(0, Math.min(selectedEnd - line.start(), line.text().length()));
+                    String before = line.text().substring(0, startOffset);
+                    String selected = line.text().substring(startOffset, endOffset);
+                    int highlightX = getContentXStart(focus) + TextUtils.widthOf(before);
+                    int highlightWidth = TextUtils.widthOf(selected);
+                    this.renderHighlight(highlightX, lineY, highlightX + highlightWidth, lineY + TextUtils.heightOf(line.text()));
                 }
 
                 int cursor = MainUtil.clamp(this.cursorPos, 0, content.length());
-                if(cursor >= line.start && cursor <= line.end) {
-                    int offset = cursor - line.start;
-                    String beforeC = line.text.substring(0, offset);
-                    cursorX = getContentXStart(focus) + TextUtils.getWidth(beforeC);
+                if(cursor >= line.start() && cursor <= line.end()) {
+                    int offset = cursor - line.start();
+                    String beforeC = line.text().substring(0, offset);
+                    cursorX = getContentXStart(focus) + TextUtils.widthOf(beforeC);
                     cursorY = lineY;
                 }
             }
@@ -433,7 +427,6 @@ public abstract class BookScreen extends Screen {
     }
 
     private void renderHighlight(int x1, int y1, int x2, int y2) {
-
         if (x1 < x2) {
             int ogX1 = x1;
             x1 = x2;
@@ -452,10 +445,10 @@ public abstract class BookScreen extends Screen {
         GL11.glEnable(GL11.GL_COLOR_LOGIC_OP);
         GL11.glLogicOp(GL11.GL_OR_REVERSE);
         tess.startQuads();
-        tess.vertex(x1, y2, 0.0F);
-        tess.vertex(x2, y2, 0.0F);
-        tess.vertex(x2, y1, 0.0F);
-        tess.vertex(x1, y1, 0.0F);
+        tess.vertex(x1, y2, zOffset);
+        tess.vertex(x2, y2, zOffset);
+        tess.vertex(x2, y1, zOffset);
+        tess.vertex(x1, y1, zOffset);
         tess.draw();
         GL11.glDisable(GL11.GL_COLOR_LOGIC_OP);
         GL11.glEnable(GL11.GL_TEXTURE_2D);

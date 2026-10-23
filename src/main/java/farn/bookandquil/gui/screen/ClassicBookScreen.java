@@ -18,7 +18,7 @@ public class ClassicBookScreen extends BookScreen {
 
     @Override
     public void renderBookCover() {
-        this.drawBook();
+        this.bindBookTexture(0);
         int contentXStart = getContentXStart(PageFocus.UNFOCUS);
         int contentYStart = getContentYStart(PageFocus.UNFOCUS);
         int contentWidth = getContentWidth(PageFocus.UNFOCUS);
@@ -37,9 +37,19 @@ public class ClassicBookScreen extends BookScreen {
         this.textRenderer.draw(authorFormat, contentXStart + (contentWidth - authorWidth) / 2, contentYStart + 26, 0);
     }
 
+    public int getContentXStart(PageFocus focus) {
+        return this.centerX + 36;
+    }
+    public int getContentYStart(PageFocus focus) {
+        return this.centerY + 34;
+    }
+    public int getContentWidth(PageFocus focus) {
+        return 116;
+    }
+
     @Override
     public void renderSigning() {
-        this.drawBook();
+        this.bindBookTexture(0);
         int contentXStart = getContentXStart(PageFocus.UNFOCUS);
         int contentYStart = getContentYStart(PageFocus.UNFOCUS);
         int contentWidth = getContentWidth(PageFocus.UNFOCUS);
@@ -63,7 +73,7 @@ public class ClassicBookScreen extends BookScreen {
 
     @Override
     public void renderBook() {
-        this.drawBook();
+        this.bindBookTexture(0);
         String pageIndicator = String.format(MainUtil.translate("book.pageIndicator"), this.getCurrentPage() + 1, this.totalPages);
         String content = getContent(PageFocus.FIRST);
 
@@ -72,9 +82,9 @@ public class ClassicBookScreen extends BookScreen {
         this.drawPageContent(content, getContentXStart(PageFocus.FIRST), PageFocus.FIRST);
     }
 
-    public void drawBook() {
-        String tex = "/assets/bookandquill/gui/legacy_book.png";
-        this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId(tex));
+    @Override
+    public void bindBookTexture(int type) {
+        this.minecraft.textureManager.bindTexture(this.minecraft.textureManager.getTextureId("/assets/bookandquill/gui/legacy_book.png"));
         this.drawTexture(this.centerX, this.centerY + 2, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
     }
 }
