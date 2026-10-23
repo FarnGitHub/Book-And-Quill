@@ -23,11 +23,11 @@ public final class TextUtils {
 
         int lStart = 0;
         BreakIterator breaks = breakIterator(text);
-        while (lStart < text.length()) {
+        while (true) {
             int lEnd = splitAt(breaks, text, width, lStart, text.length());
-            String subString = text.substring(lStart, lEnd);
-            lines.add(new TextLine(subString, lStart, lEnd));
-            lStart = lEnd;
+            lines.add(new TextLine(text.substring(lStart, lEnd), lStart, lEnd));
+            if (lEnd >= text.length()) break;
+            lStart = text.charAt(lEnd) == '\n' ? lEnd + 1 : lEnd;
         }
         return lines;
     }
@@ -36,10 +36,11 @@ public final class TextUtils {
         int total = 0;
         int lStart = 0;
         BreakIterator breaks = breakIterator(text);
-        while (lStart < text.length()) {
+        while (true) {
             int lEnd = splitAt(breaks, text, width, lStart, text.length());
             total += heightOf(text.substring(lStart, lEnd));
-            lStart = lEnd;
+            if (lEnd >= text.length()) break;
+            lStart = text.charAt(lEnd) == '\n' ? lEnd + 1 : lEnd;
         }
         return Math.max(total, 8);
     }
@@ -67,17 +68,12 @@ public final class TextUtils {
 
             char c = text.charAt(index);
             if(c == '\n') {
-                index--;
+                return index;
             } else {
                 if (c == ' ') breakAt = index;
                 if (lineWidth != 0) first = false;
                 lineWidth += widthOf(String.valueOf(c));
                 index++;
-            }
-
-            if (c == '\n') {
-                breakAt = ++index;
-                break;
             }
 
             if (lineWidth > maxWidth) {

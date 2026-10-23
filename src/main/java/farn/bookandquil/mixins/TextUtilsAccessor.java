@@ -18,11 +18,6 @@ public interface TextUtilsAccessor {
         throw new AssertionError();
     }
 
-    @Invoker("findHardBreak")
-    static int BQ_findHardBreak(String text, int start, int end, int maxWidth, ToIntFunction<String> widthFunction) {
-        throw new AssertionError();
-    }
-
     @Invoker("containsThai")
     static boolean BQ_containsThai(String text) {
         throw new AssertionError();
