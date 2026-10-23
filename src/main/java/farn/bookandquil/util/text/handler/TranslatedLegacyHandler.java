@@ -27,7 +27,7 @@ public class TranslatedLegacyHandler implements Handler {
     @Override
     public void forEachSplit(String text, int width, LineInsert insert) {
         int lStart = 0;
-        var breaks = BreakIterator.getLineInstance(TextUtilsAccessor.BQ_containsThai(text) ? TextUtilsAccessor.BQ_THAI() : Locale.US);
+        BreakIterator breaks = BreakIterator.getLineInstance(TextUtilsAccessor.BQ_containsThai(text) ? TextUtilsAccessor.BQ_THAI() : Locale.US);
         breaks.setText(text);
         while (!text.isEmpty()) {
             int lEnd = splitAt(breaks, text, width, lStart, text.length());
